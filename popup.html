@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List</title>
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --text-color: #333;
+      --light-color: #f5f5f5;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      width: 350px;
+      min-height: 500px;
+      background-color: #f9f9f9;
+      color: var(--text-color);
+      padding: 15px;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    input, select, button {
+      padding: 10px;
+      border-radius: var(--border-radius);
+      border: 1px solid #ddd;
+      outline: none;
+    }
+
+    input {
+      flex-grow: 1;
+    }
+
+    select {
+      background-color: white;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 10px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: 500;
+    }
+
+    .tab.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    .todo-item .content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .todo-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .todo-item .text {
+      word-break: break-word;
+      flex: 1;
+    }
+
+    .todo-item.completed .text {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .edit-btn, .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-btn svg, .delete-btn svg {
+      transition: stroke 0.3s;
+    }
+
+    .edit-btn:hover svg {
+      stroke: var(--primary-color);
+    }
+
+    .delete-btn:hover svg {
+      stroke: #e74c3c;
+    }
+
+    .empty-message {
+      text-align: center;
+      margin-top: 20px;
+      color: #888;
+    }
+
+    /* CSS cho phân trang */
+    #pagination {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 15px;
+    }
+
+    .pagination-btn {
+      padding: 8px 12px;
+      margin: 2px;
+      border: 1px solid #ddd;
+      background-color: white;
+      cursor: pointer;
+      border-radius: var(--border-radius);
+    }
+
+    .pagination-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Todo List</h1>
+  
+  <div class="container">
+    <div class="input-group">
+      <input type="text" id="todoInput" placeholder="Thêm công việc mới...">
+      <select id="todoCategory">
+        <option value="today">Hôm nay</option>
+        <option value="tomorrow">Ngày mai</option>
+        <option value="week">Tuần này</option>
+        <option value="month">Tháng này</option>
+      </select>
+      <button id="addBtn">Thêm</button>
+    </div>
+    
+    <div class="tabs">
+      <div class="tab active" data-category="all">Tất cả</div>
+      <div class="tab" data-category="today">Hôm nay</div>
+      <div class="tab" data-category="tomorrow">Ngày mai</div>
+      <div class="tab" data-category="week">Tuần này</div>
+      <div class="tab" data-category="month">Tháng này</div>
+    </div>
+    
+    <div class="todo-list" id="todoList">
+      <!-- Các công việc sẽ được thêm vào đây -->
+    </div>
+    
+    <!-- Phần phân trang -->
+    <div id="pagination"></div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
