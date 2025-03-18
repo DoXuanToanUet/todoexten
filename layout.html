@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Today's Task</title>
+  <!-- Link CSS -->
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+  --primary-color: #3a66f7;
+  --secondary-color: #1f4bb8;
+  --background-color: #f8f9fb;
+  --text-color: #333;
+  --gray-light: #f2f2f2;
+  --border-radius: 12px;
+  --font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+* {
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background-color);
+  font-family: var(--font-family);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #fff;
+  height: 60px;
+  border-bottom: 1px solid #eee;
+}
+
+.time-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #666;
+}
+
+.time-date .time {
+  font-size: 16px;
+}
+
+.time-date .divider {
+  color: #ccc;
+}
+
+.time-date .date {
+  font-size: 14px;
+}
+
+.user-profile .user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* MAIN CONTENT */
+.main {
+  padding: 16px;
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #999;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: #fff;
+  transition: background 0.3s;
+}
+.btn-primary:hover {
+  background: var(--secondary-color);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  color: #777;
+  cursor: pointer;
+  position: relative;
+  padding: 6px 0;
+}
+.tab .count {
+  color: #aaa;
+  font-size: 13px;
+}
+.tab.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0; 
+  right: 0;
+  height: 3px;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+
+/* TASK LIST */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: 14px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.task-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #111;
+}
+
+.task-desc {
+  font-size: 14px;
+  color: #777;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.task-time {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.task-avatars {
+  display: flex;
+  align-items: center;
+  gap: -8px; /* Để avatar chồng lên nhau nhẹ */
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  object-fit: cover;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Check circle (hoặc icon check) */
+.check-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+  cursor: pointer;
+  background: #fff;
+  position: relative;
+}
+.check-circle::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.3s;
+}
+.check-circle.completed {
+  background: var(--primary-color);
+}
+.check-circle.completed::after {
+  background: url('data:image/svg+xml,%3Csvg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M12.8333 4.83334L6.49996 11.1667L3.16663 7.83334" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/%3E%3C/svg%3E') no-repeat center center;
+  background-size: contain;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="time-date">
+      <!-- Thời gian, ngày tháng (có thể thay đổi động bằng JS) -->
+      <span class="time">20:12</span>
+      <span class="divider">|</span>
+      <span class="date">11 May</span>
+    </div>
+    <!-- Profile hoặc biểu tượng người dùng -->
+    <div class="user-profile">
+      <img src="https://i.pravatar.cc/36" alt="User" class="user-avatar">
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- Tiêu đề chính cho hôm nay -->
+    <div class="main-header">
+      <div>
+        <h1 class="title">Today's Task</h1>
+        <p class="subtitle">Wednesday, 11 May</p>
+      </div>
+      <button class="btn btn-primary">+ New Task</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active">All <span class="count">(35)</span></button>
+      <button class="tab">Open</button>
+      <button class="tab">Closed</button>
+      <button class="tab">Archived</button>
+    </div>
+
+    <!-- Danh sách task -->
+    <div class="task-list">
+
+      <!-- Một task item -->
+      <div class="task-item">
+        <div class="task-info">
+          <h3 class="task-title">Client Review &amp; Feedback</h3>
+          <p class="task-desc">Crypto Wallet Redesign</p>
+          <div class="task-meta">
+            <span class="task-time">Today | 10:00 PM - 11:15 PM</span>
+            <!-- Danh sách avatar thành viên, tuỳ ý -->
+            <div class="task-avatars">
+              <img src="https://i.pravatar.cc/24?u=a" alt="member" class="avatar">
+              <img src="https://i.pravatar.cc/24?u=b" alt="member" class="avatar">
+              <img src="https://i.pravatar.cc/24?u=c" alt="member" class="avatar">
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <!-- Biểu tượng check / toggle completed -->
+          <div class="check-circle completed"></div>
+        </div>
+      </div>
+
+      <!-- Một task item -->
+      <div class="task-item">
+        <div class="task-info">
+          <h3 class="task-title">Create Wireframe</h3>
+          <p class="task-desc">Crypto Wallet Redesign</p>
+          <div class="task-meta">
+            <span class="task-time">Today | 09:15 PM - 10:00 PM</span>
+            <div class="task-avatars">
+              <img src="https://i.pravatar.cc/24?u=d" alt="member" class="avatar">
+              <img src="https://i.pravatar.cc/24?u=e" alt="member" class="avatar">
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <div class="check-circle"></div>
+        </div>
+      </div>
+
+      <!-- Thêm nhiều task-item tuỳ ý -->
+      <div class="task-item">
+        <div class="task-info">
+          <h3 class="task-title">Review with Client</h3>
+          <p class="task-desc">Product Team</p>
+          <div class="task-meta">
+            <span class="task-time">Today | 01:00 PM - 03:00 PM</span>
+            <div class="task-avatars">
+              <img src="https://i.pravatar.cc/24?u=f" alt="member" class="avatar">
+            </div>
+          </div>
+        </div>
+        <div class="task-actions">
+          <div class="check-circle completed"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

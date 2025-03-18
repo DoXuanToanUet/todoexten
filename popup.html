@@ -1,232 +1,506 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Todo List</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Today's Task</title>
   <style>
     :root {
-      --primary-color: #4a6fa5;
-      --secondary-color: #166088;
+      --primary-color: #3a66f7;
+      --secondary-color: #1f4bb8;
+      --background-color: #f8f9fb;
       --text-color: #333;
-      --light-color: #f5f5f5;
-      --border-radius: 8px;
-      --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      --gray-light: #777;
+      --border-radius: 12px;
+      --font-family: "Inter", "Segoe UI", sans-serif;
+      --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     body {
-      width: 350px;
+      width: 350px; /* Kích thước popup extension */
       min-height: 500px;
-      background-color: #f9f9f9;
+      background: var(--background-color);
+      font-family: var(--font-family);
       color: var(--text-color);
-      padding: 15px;
-    }
-
-    h1 {
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .input-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    input, select, button {
-      padding: 10px;
-      border-radius: var(--border-radius);
-      border: 1px solid #ddd;
-      outline: none;
-    }
-
-    input {
-      flex-grow: 1;
-    }
-
-    select {
-      background-color: white;
-    }
-
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      cursor: pointer;
-      border: none;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: var(--secondary-color);
-    }
-
-    .tabs {
-      display: flex;
-      margin-bottom: 10px;
-      background-color: white;
-      border-radius: var(--border-radius);
+      position: relative;
       overflow: hidden;
+      transition: background 0.3s, color 0.3s;
+      padding-bottom: 50px; /* Dành chỗ cho footer */
     }
-
-    .tab {
-      flex: 1;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: background-color 0.3s;
+    /* Dark mode */
+    body.dark-mode {
+      --background-color: #1e1e1e;
+      --text-color: #fff;
+      --gray-light: #aaa;
+      background: var(--background-color);
+      color: var(--text-color);
+    }
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: #fff;
+      height: 50px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.3s;
+    }
+    body.dark-mode .header {
+      background: #333;
+      border-bottom: 1px solid #555;
+    }
+    .time-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-weight: 500;
+      font-size: 14px;
+      color: #666;
     }
-
-    .tab.active {
-      background-color: var(--primary-color);
+    .icons {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: 18px;
+      color: #666;
+      cursor: pointer;
+      position: relative;
+    }
+    .icons span:hover {
+      color: var(--primary-color);
+    }
+    /* Notification icon với badge */
+    #notification-icon {
+      position: relative;
+    }
+    #notif-badge {
+      position: absolute;
+      top: -5px;
+      right: -10px;
+      background: red;
       color: white;
+      border-radius: 50%;
+      padding: 2px 5px;
+      font-size: 10px;
     }
-
-    .todo-list {
+    /* Notification Dropdown */
+    .notification-box {
+      display: none;
+      position: absolute;
+      top: 55px;
+      right: 16px;
+      background: #fff;
+      box-shadow: var(--box-shadow);
+      padding: 10px;
+      border-radius: var(--border-radius);
+      width: 250px;
+      z-index: 10;
+      color: #333;
+      font-size: 14px;
+    }
+    body.dark-mode .notification-box {
+      background: #333;
+      color: #fff;
+    }
+    .notification-box .notification-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .notification-box ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .notification-box li {
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .notification-box li:last-child {
+      border-bottom: none;
+    }
+    /* MAIN CONTENT */
+    .main {
+      padding: 16px;
+    }
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #999;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: var(--border-radius);
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: var(--primary-color);
+      color: #fff;
+      transition: background 0.3s;
+    }
+    .btn-primary:hover {
+      background: var(--secondary-color);
+    }
+    /* New Task Interface */
+    .input-group {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: 10px;
-    }
-
-    .todo-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background-color: white;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
       border-radius: var(--border-radius);
       box-shadow: var(--box-shadow);
     }
-
-    .todo-item .content {
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: var(--border-radius);
+      border: 1px solid #ddd;
+      outline: none;
+      background: #fff;
+    }
+    .input-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    #taskError {
+      color: red;
+      font-size: 13px;
+      display: none;
+    }
+    /* Tabs */
+    .tabs {
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-bottom: 12px;
     }
-
-    .todo-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
+    .tab {
+      background: transparent;
+      border: none;
+      font-size: 13px;
+      color: #777;
+      cursor: pointer;
+      position: relative;
+      padding: 6px 0;
+      font-weight: 500;
+    }
+    .tab .count {
+      color: #aaa;
+      font-size: 12px;
+    }
+    .tab.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+    /* Section Header cho Today/Tomorrow/All */
+    .section-header {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 10px 0 5px;
+      color: var(--primary-color);
+    }
+    /* Todo List Items - Modern Card Style */
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: 10px 12px;
+      box-shadow: var(--box-shadow);
+    }
+    .todo-item.completed {
+      opacity: 0.7;
+    }
+    .todo-item .content {
+      flex: 1;
       cursor: pointer;
     }
-
-    .todo-item .text {
-      word-break: break-word;
-      flex: 1;
+    .todo-item .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    .todo-item.completed .text {
-      text-decoration: line-through;
-      color: #888;
+    .todo-item .task-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-color);
     }
-
+    .todo-item .task-desc {
+      font-size: 14px;
+      color: var(--gray-light);
+      margin-top: 5px;
+    }
+    .todo-item .task-meta {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 5px;
+    }
     .actions {
       display: flex;
-      gap: 5px;
+      align-items: center;
+      gap: 6px;
     }
-
-    .edit-btn, .delete-btn {
+    /* Vòng tròn check */
+    .check-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-color);
+      cursor: pointer;
+      background: #fff;
+      position: relative;
+    }
+    .check-circle::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.3s;
+    }
+    .check-circle.checked {
+      background: var(--primary-color);
+    }
+    .check-circle.checked::after {
+      background: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.8333 4.83334L6.49996 11.1667L3.16663 7.83334' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center center;
+      background-size: contain;
+    }
+    .edit-btn,
+    .delete-btn {
       background: none;
       border: none;
       cursor: pointer;
-      padding: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      transition: transform 0.2s;
     }
-
-    .edit-btn svg, .delete-btn svg {
-      transition: stroke 0.3s;
+    .edit-btn:hover,
+    .delete-btn:hover {
+      transform: scale(1.1);
     }
-
-    .edit-btn:hover svg {
-      stroke: var(--primary-color);
-    }
-
-    .delete-btn:hover svg {
-      stroke: #e74c3c;
-    }
-
     .empty-message {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 10px;
       color: #888;
+      font-size: 13px;
     }
-
-    /* CSS cho phân trang */
+    /* Pagination */
     #pagination {
       display: flex;
       justify-content: center;
       gap: 4px;
-      margin-top: 15px;
+      margin-top: 12px;
     }
-
     .pagination-btn {
-      padding: 8px 12px;
-      margin: 2px;
+      padding: 4px 8px;
+      font-size: 12px;
       border: 1px solid #ddd;
       background-color: white;
       cursor: pointer;
       border-radius: var(--border-radius);
     }
-
     .pagination-btn.active {
       background-color: var(--primary-color);
       color: white;
     }
-
     .pagination-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
+    /* Detail View Overlay */
+    .detail-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--background-color);
+      color: var(--text-color);
+      padding: 16px;
+      overflow-y: auto;
+      z-index: 20;
+      display: none;
+    }
+    .back-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 6px 12px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .detail-content h2 {
+      margin-bottom: 10px;
+    }
+    .detail-content p {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    /* FOOTER */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    body.dark-mode .footer {
+      background: #333;
+      border-top: 1px solid #555;
+    }
+    .footer button {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    .footer button:hover {
+      background: var(--secondary-color);
+    }
+    .footer .copyright {
+      font-size: 12px;
+      color: #888;
+    }
+    .task-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Hiển thị tối đa 3 dòng */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
   </style>
 </head>
 <body>
-  <h1>Todo List</h1>
-  
-  <div class="container">
-    <div class="input-group">
-      <input type="text" id="todoInput" placeholder="Thêm công việc mới...">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="time-date">
+      <span class="time"></span>
+      <span class="divider">|</span>
+      <span class="date"></span>
+    </div>
+    <div class="icons">
+      <span id="toggle-dark-mode">🌙</span>
+      <span id="notification-icon">🔔
+        <span id="notif-badge">0</span>
+      </span>
+      <span id="user-icon">👤</span>
+    </div>
+  </header>
+
+  <!-- Notification Dropdown -->
+  <div class="notification-box" id="notification-box">
+    <div class="notification-title">Công việc hôm nay (<span id="notif-count">0</span>)</div>
+    <ul id="notification-list"></ul>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- Header chính -->
+    <div class="main-header">
+      <div>
+        <h1 class="title">Today's Task</h1>
+        <p class="subtitle">Wednesday, 11 May</p>
+      </div>
+      <button class="btn btn-primary" id="openAddTask">+ New Task</button>
+    </div>
+
+    <!-- Giao diện nhập liệu New Task (ẩn mặc định) -->
+    <div class="input-group" id="addTaskGroup" style="display: none;">
+      <input type="text" id="todoTitle" placeholder="Task Title..." />
+      <textarea id="todoDesc" placeholder="Task Description (optional)"></textarea>
       <select id="todoCategory">
-        <option value="today">Hôm nay</option>
-        <option value="tomorrow">Ngày mai</option>
-        <option value="week">Tuần này</option>
-        <option value="month">Tháng này</option>
+        <option value="today">Today</option>
+        <option value="tomorrow">Tomorrow</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
       </select>
-      <button id="addBtn">Thêm</button>
+      <button id="addBtn">Add</button>
+      <div id="taskError">Task title is required.</div>
     </div>
-    
+
+    <!-- Tabs -->
     <div class="tabs">
-      <div class="tab active" data-category="all">Tất cả</div>
-      <div class="tab" data-category="today">Hôm nay</div>
-      <div class="tab" data-category="tomorrow">Ngày mai</div>
-      <div class="tab" data-category="week">Tuần này</div>
-      <div class="tab" data-category="month">Tháng này</div>
+      <button class="tab active" data-category="all">All <span class="count" id="allCount">(0)</span></button>
+      <button class="tab" data-category="today">Today <span class="count" id="todayCount">(0)</span></button>
+      <button class="tab" data-category="tomorrow">Tomorrow <span class="count" id="tomorrowCount">(0)</span></button>
+      <button class="tab" data-category="week">This Week <span class="count" id="weekCount">(0)</span></button>
+      <button class="tab" data-category="month">This Month <span class="count" id="monthCount">(0)</span></button>
     </div>
-    
-    <div class="todo-list" id="todoList">
-      <!-- Các công việc sẽ được thêm vào đây -->
-    </div>
-    
-    <!-- Phần phân trang -->
+
+    <!-- Danh sách Todo -->
+    <div class="todo-list" id="todoList"></div>
+
+    <!-- Phân trang (nếu cần) -->
     <div id="pagination"></div>
   </div>
-  
+
+  <!-- Detail View Overlay -->
+  <div class="detail-view" id="detail-view">
+    <button class="back-btn" id="back-btn">← Back</button>
+    <div class="detail-content" id="detail-content"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <button id="exportExcelBtn">📊 Export to Excel</button>
+    <button id="exportBtn">📄 Export to Word</button>
+    <div class="copyright">© 2025 Your Company. All rights reserved.</div>
+  </footer>
+
   <script src="popup.js"></script>
 </body>
 </html>
