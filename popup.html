@@ -21,7 +21,7 @@
       box-sizing: border-box;
     }
     body {
-      width: 350px; /* Kích thước popup extension */
+      min-width: 400px; /* Kích thước popup extension */
       min-height: 500px;
       background: var(--background-color);
       font-family: var(--font-family);
@@ -468,6 +468,175 @@
       font-size: 12px;
       color: #888;
     }
+/* Overlay toàn màn hình */
+.search-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Nền mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Khối nội dung của search popup */
+.search-popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Input tìm kiếm */
+#search-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+  margin-bottom: 10px;
+}
+
+/* Nút đóng popup */
+#search-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Các kết quả tìm kiếm */
+.search-result-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background: #f7f7f7;
+}
+
+/* Khi không có kết quả */
+.search-no-result {
+  padding: 10px;
+  text-align: center;
+  color: #888;
+}
+
+.search-results-count {
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #ddd;
+}
+/* Overlay toàn màn hình cho search popup */
+.search-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Nền mờ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Khối nội dung của search popup */
+.search-popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Style cho search bar */
+#search-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 25px;  /* Bo tròn viền như search bar */
+  outline: none;
+  margin-bottom: 20px;
+}
+
+/* Nút đóng popup */
+#search-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Thanh tab cho kết quả tìm kiếm */
+.search-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.search-tab {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.search-tab.active {
+  color: #000;
+  border-bottom: 2px solid #3a66f7;
+}
+
+/* Vùng hiển thị kết quả tìm kiếm */
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background: #f7f7f7;
+}
+
+/* Header hiển thị số lượng kết quả */
+.search-results-count {
+  font-weight: bold;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Thông báo khi không có kết quả */
+.search-no-result {
+  padding: 10px;
+  text-align: center;
+  color: #888;
+}
+
   </style>
 </head>
 <body>
@@ -482,6 +651,8 @@
     <div class="icons">
       <span id="toggle-dark-mode">🌙</span>
       <span id="change-theme">🎨</span>
+      <!-- Icon search mới -->
+      <span id="search-icon">🔍</span>
       <span id="notification-icon">🔔
         <span id="notif-badge">0</span>
       </span>
@@ -489,8 +660,26 @@
     </div>
   </header>
 
+  <!-- Search Popup Overlay -->
+<div id="search-popup" class="search-popup" style="display: none;">
+  <div class="search-popup-content">
+    <button id="search-close">✖</button>
+    <input type="text" id="search-input" placeholder="__MSG_searchPlaceholder__" />
+    <!-- Thanh Tab cho kết quả tìm kiếm -->
+    <div class="search-tabs">
+      <div class="search-tab active" data-filter="all">__MSG_all__</div>
+      <div class="search-tab" data-filter="today">__MSG_today__</div>
+      <div class="search-tab" data-filter="week">__MSG_thisWeek__</div>
+      <div class="search-tab" data-filter="month">__MSG_thisMonth__</div>
+    </div>
+    <!-- Vùng hiển thị kết quả -->
+    <div id="search-results" class="search-results"></div>
+  </div>
+</div>
+
   <!-- Theme Picker -->
   <div id="theme-picker">
+    <!-- Nội dung Theme Picker (giữ nguyên) -->
     <div>
       <label for="primaryColorPicker">Primary Color:</label>
       <input type="color" id="primaryColorPicker" value="#3a66f7">
@@ -519,64 +708,64 @@
 
   <!-- Notification Dropdown -->
   <div class="notification-box" id="notification-box">
-    <div class="notification-title">Công việc hôm nay (<span id="notif-count">0</span>)</div>
+    <div class="notification-title">__MSG_jobToday__ (<span id="notif-count">0</span>)</div>
     <ul id="notification-list"></ul>
   </div>
 
   <!-- MAIN CONTENT -->
   <div class="main">
-    <!-- Header chính -->
     <div class="main-header">
       <div>
-        <h1 class="title">Today's Task</h1>
-        <p class="subtitle">Wednesday, 11 May</p>
+        <h1 class="title">__MSG_newTask__</h1>
+        <p class="subtitle">__MSG_dateSubtitle__</p>
       </div>
-      <button class="btn btn-primary" id="openAddTask">+ New Task</button>
+      <button class="btn btn-primary" id="openAddTask">+ __MSG_addNewTask__</button>
     </div>
 
-    <!-- Giao diện nhập liệu New Task (ẩn mặc định) -->
+    <!-- New Task Interface -->
     <div class="input-group" id="addTaskGroup" style="display: none;">
-      <input type="text" id="todoTitle" placeholder="Task Title..." />
-      <textarea id="todoDesc" placeholder="Task Description (optional)"></textarea>
+      <input type="text" id="todoTitle" placeholder="__MSG_taskTitlePlaceholder__" />
+      <textarea id="todoDesc" placeholder="__MSG_taskDescPlaceholder__"></textarea>
       <select id="todoCategory">
-        <option value="today">Today</option>
-        <option value="tomorrow">Tomorrow</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
+        <option value="today">__MSG_today__</option>
+        <option value="tomorrow">__MSG_tomorrow__</option>
+        <option value="week">__MSG_thisWeek__</option>
+        <option value="month">__MSG_thisMonth__</option>
       </select>
-      <button id="addBtn">Add</button>
-      <div id="taskError">Task title is required.</div>
+      <button id="addBtn">__MSG_addBtn__</button>
+      <div id="taskError">__MSG_taskError__</div>
     </div>
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab active" data-category="all">All <span class="count" id="allCount">(0)</span></button>
-      <button class="tab" data-category="today">Today <span class="count" id="todayCount">(0)</span></button>
-      <button class="tab" data-category="tomorrow">Tomorrow <span class="count" id="tomorrowCount">(0)</span></button>
-      <button class="tab" data-category="week">This Week <span class="count" id="weekCount">(0)</span></button>
-      <button class="tab" data-category="month">This Month <span class="count" id="monthCount">(0)</span></button>
+      <button class="tab active" data-category="all">__MSG_all__ <span class="count" id="allCount">(0)</span></button>
+      <button class="tab" data-category="today">__MSG_today__ <span class="count" id="todayCount">(0)</span></button>
+      <button class="tab" data-category="tomorrow">__MSG_tomorrow__ <span class="count" id="tomorrowCount">(0)</span></button>
+      <button class="tab" data-category="week">__MSG_thisWeek__ <span class="count" id="weekCount">(0)</span></button>
+      <button class="tab" data-category="month">__MSG_thisMonth__ <span class="count" id="monthCount">(0)</span></button>
     </div>
 
     <!-- Danh sách Todo -->
     <div class="todo-list" id="todoList"></div>
 
-    <!-- Phân trang (nếu cần) -->
+    <!-- Phân trang -->
     <div id="pagination"></div>
   </div>
 
   <!-- Detail View Overlay -->
   <div class="detail-view" id="detail-view">
-    <button class="back-btn" id="back-btn">← Back</button>
+    <button class="back-btn" id="back-btn">← __MSG_back__</button>
     <div class="detail-content" id="detail-content"></div>
   </div>
 
   <!-- FOOTER -->
   <footer class="footer">
-    <button id="exportExcelBtn">📊 Export to Excel</button>
-    <button id="exportBtn">📄 Export to Word</button>
-    <div class="copyright">© 2025 Your Company. All rights reserved.</div>
+    <button id="exportExcelBtn">📊 __MSG_exportExcel__</button>
+    <button id="exportBtn">📄 __MSG_exportWord__</button>
+    <div class="copyright">© 2025 __MSG_companyName__</div>
   </footer>
 
   <script src="popup.js"></script>
 </body>
+
 </html>

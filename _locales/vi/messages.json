@@ -1,0 +1,143 @@
+{
+    "extensionName": {
+      "message": "Modern TodoList",
+      "description": "Tên của extension"
+    },
+    "extensionDescription": {
+      "message": "Ứng dụng TodoList hiện đại với phân loại theo thời gian",
+      "description": "Mô tả của extension"
+    },
+    "newTask": {
+      "message": "Công việc hôm nay",
+      "description": "Tiêu đề chính của trang"
+    },
+    "dateSubtitle": {
+      "message": "Thứ Tư, 11 Tháng 5",
+      "description": "Thông tin ngày tháng"
+    },
+    "addNewTask": {
+      "message": "Công việc mới",
+      "description": "Nút thêm công việc mới"
+    },
+    "taskTitlePlaceholder": {
+      "message": "Tiêu đề công việc...",
+      "description": "Placeholder cho tiêu đề công việc"
+    },
+    "taskDescPlaceholder": {
+      "message": "Mô tả công việc (tùy chọn)",
+      "description": "Placeholder cho mô tả công việc"
+    },
+    "today": {
+      "message": "Hôm nay",
+      "description": "Danh mục Hôm nay"
+    },
+    "tomorrow": {
+      "message": "Ngày mai",
+      "description": "Danh mục Ngày mai"
+    },
+    "thisWeek": {
+      "message": "Tuần này",
+      "description": "Danh mục Tuần này"
+    },
+    "thisMonth": {
+      "message": "Tháng này",
+      "description": "Danh mục Tháng này"
+    },
+    "addBtn": {
+      "message": "Thêm",
+      "description": "Nút thêm"
+    },
+    "taskError": {
+      "message": "Bạn chưa nhập tiêu đề công việc.",
+      "description": "Thông báo lỗi khi chưa nhập tiêu đề"
+    },
+    "all": {
+      "message": "Tất cả",
+      "description": "Hiển thị tất cả công việc"
+    },
+    "back": {
+      "message": "Quay lại",
+      "description": "Nút quay lại"
+    },
+    "exportExcel": {
+      "message": "Xuất Excel",
+      "description": "Nút xuất ra file Excel"
+    },
+    "exportWord": {
+      "message": "Xuất Word",
+      "description": "Nút xuất ra file Word"
+    },
+    "companyName": {
+      "message": "Công ty của bạn. Bảo lưu mọi quyền.",
+      "description": "Thông tin bản quyền"
+    },
+    "noTaskNotification": {
+      "message": "Không có công việc nào",
+      "description": "Thông báo khi không có công việc cho ngày hôm nay"
+    },
+    "noTasks": {
+      "message": "Không có công việc",
+      "description": "Thông báo khi danh sách trống"
+    },
+    "uncompleted": {
+      "message": "Chưa hoàn thành",
+      "description": "Tiêu đề cho công việc chưa hoàn thành"
+    },
+    "completed": {
+      "message": "Đã hoàn thành",
+      "description": "Tiêu đề cho công việc đã hoàn thành"
+    },
+    "edit": {
+      "message": "Sửa",
+      "description": "Nút sửa công việc"
+    },
+    "delete": {
+      "message": "Xóa",
+      "description": "Nút xóa công việc"
+    },
+    "noDescription": {
+      "message": "Không có mô tả",
+      "description": "Thông báo khi không có mô tả cho công việc"
+    },
+    "categoryLabel": {
+      "message": "Danh mục",
+      "description": "Nhãn danh mục"
+    },
+    "createdLabel": {
+      "message": "Ngày tạo",
+      "description": "Nhãn ngày tạo"
+    },
+    "lastEditedLabel": {
+      "message": "Ngày chỉnh sửa",
+      "description": "Nhãn ngày chỉnh sửa"
+    },
+    "todoListExportTitle": {
+      "message": "Xuất danh sách công việc",
+      "description": "Tiêu đề cho file xuất danh sách công việc"
+    },
+    "todoListHeader": {
+      "message": "Danh sách Công việc",
+      "description": "Tiêu đề hiển thị trên giao diện danh sách công việc"
+    },
+    "statusLabel": {
+      "message": "Trạng thái",
+      "description": "Nhãn trạng thái"
+    },
+    "pending": {
+      "message": "Chưa hoàn thành",
+      "description": "Trạng thái công việc đang chờ hoàn thành"
+    },
+    "titleLabel": {
+      "message": "Tiêu đề",
+      "description": "Nhãn tiêu đề trong file xuất"
+    },
+    "descriptionLabel": {
+      "message": "Mô tả",
+      "description": "Nhãn mô tả trong file xuất"
+    },
+    "jobToday": {
+        "message": "Công việc hôm nay",
+        "description": "Công việc hôm nay"
+      }
+  }
+  

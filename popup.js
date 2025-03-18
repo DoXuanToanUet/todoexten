@@ -1,3 +1,12 @@
+document.addEventListener('DOMContentLoaded', function() {
+  // Tìm tất cả các token __MSG_key__ trong nội dung HTML và thay thế
+  document.body.innerHTML = document.body.innerHTML.replace(/__MSG_([a-zA-Z0-9_]+)__/g, function(match, p1) {
+    return chrome.i18n.getMessage(p1);
+  });
+
+  // Các đoạn code khác cho extension (ví dụ: xử lý sự kiện click, dark mode, vv)
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // Phần tử header
   const timeEl = document.querySelector('.time');
@@ -139,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     notifBadge.textContent = pendingTodos.length;
     notifCountEl.textContent = pendingTodos.length;
     if (pendingTodos.length === 0) {
-      notificationList.innerHTML = "<li>Không có công việc nào</li>";
+      notificationList.innerHTML = "<li>" + chrome.i18n.getMessage("noTaskNotification") + "</li>";
     } else {
       pendingTodos.forEach(todo => {
         const li = document.createElement("li");
@@ -248,18 +257,19 @@ document.addEventListener('DOMContentLoaded', () => {
     item.classList.add("todo-item");
     if (todo.completed) item.classList.add("completed");
 
+    // Sử dụng các chuỗi đa ngôn ngữ cho nút Edit & Delete
     item.innerHTML = `
       <div class="content">
         <div class="header">
           <span class="task-title">${todo.title}</span>
-          <span class="task-meta">${formatTime(todo.createdAt)} | ${todo.category}</span>
+          <span class="task-meta">${formatTime(todo.createdAt)} | ${chrome.i18n.getMessage(todo.category)}</span>
         </div>
         <div class="task-desc">${truncate(todo.description, 100)}</div>
       </div>
       <div class="actions">
         <div class="check-circle ${todo.completed ? "checked" : ""}"></div>
-        <button class="edit-btn">Edit</button>
-        <button class="delete-btn">Delete</button>
+        <button class="edit-btn">${chrome.i18n.getMessage("edit")}</button>
+        <button class="delete-btn">${chrome.i18n.getMessage("delete")}</button>
       </div>
     `;
 
@@ -318,8 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (currentFilter === "all" || currentFilter === "today" || currentFilter === "tomorrow") {
       const pending = filtered.filter(todo => !todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const completed = filtered.filter(todo => todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      filtered = [...pending, ...completed];
+      const completedTodos = filtered.filter(todo => todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      filtered = [...pending, ...completedTodos];
     }
 
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -329,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     todoList.innerHTML = "";
     if (pageItems.length === 0) {
-      todoList.innerHTML = '<div class="empty-message">No tasks</div>';
+      todoList.innerHTML = '<div class="empty-message">' + chrome.i18n.getMessage("noTasks") + '</div>';
       paginationContainer.innerHTML = "";
       return;
     }
@@ -340,14 +350,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!todo.completed && !renderedSection.pending) {
           const header = document.createElement("div");
           header.className = "section-header";
-          header.textContent = "Uncompleted";
+          header.textContent = chrome.i18n.getMessage("uncompleted");
           todoList.appendChild(header);
           renderedSection.pending = true;
         }
         if (todo.completed && !renderedSection.completed) {
           const header = document.createElement("div");
           header.className = "section-header";
-          header.textContent = "Completed";
+          header.textContent = chrome.i18n.getMessage("completed");
           todoList.appendChild(header);
           renderedSection.completed = true;
         }
@@ -423,10 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function showDetail(todo) {
     detailContent.innerHTML = `
       <h2>${todo.title}</h2>
-      <p>${todo.description ? todo.description : "No description provided."}</p>
-      <p><strong>Category:</strong> ${todo.category}</p>
-      <p><strong>Created:</strong> ${formatTime(todo.createdAt)}</p>
-      ${todo.lastEditedAt ? `<p><strong>Last Edited:</strong> ${formatTime(todo.lastEditedAt)}</p>` : ''}
+      <p>${todo.description ? todo.description : chrome.i18n.getMessage("noDescription")}</p>
+      <p><strong>${chrome.i18n.getMessage("categoryLabel")}:</strong> ${chrome.i18n.getMessage(todo.category)}</p>
+      <p><strong>${chrome.i18n.getMessage("createdLabel")}:</strong> ${formatTime(todo.createdAt)}</p>
+      ${todo.lastEditedAt ? `<p><strong>${chrome.i18n.getMessage("lastEditedLabel")}:</strong> ${formatTime(todo.lastEditedAt)}</p>` : ''}
     `;
     document.querySelector('.main').style.display = 'none';
     detailView.style.display = 'block';
@@ -439,15 +449,15 @@ document.addEventListener('DOMContentLoaded', () => {
   /* --- Export to Word --- */
   function exportToWord() {
     const todayStr = new Date().toISOString().split('T')[0];
-    let content = '<html><head><meta charset="utf-8"><title>Todo List Export</title></head><body>';
-    content += '<h1>Todo List</h1>';
+    let content = '<html><head><meta charset="utf-8"><title>' + chrome.i18n.getMessage("todoListExportTitle") + '</title></head><body>';
+    content += '<h1>' + chrome.i18n.getMessage("todoListHeader") + '</h1>';
     todos.forEach(todo => {
       content += `<h2>${todo.title}</h2>`;
       content += `<p>${todo.description ? todo.description : ""}</p>`;
-      content += `<p><em>Category: ${todo.category} | Created: ${todo.createdAt}</em></p>`;
-      content += `<p><strong>Status: ${todo.completed ? "Completed" : "Pending"}</strong></p>`;
+      content += `<p><em>${chrome.i18n.getMessage("categoryLabel")}: ${chrome.i18n.getMessage(todo.category)} | ${chrome.i18n.getMessage("createdLabel")}: ${formatTime(todo.createdAt)}</em></p>`;
+      content += `<p><strong>${chrome.i18n.getMessage("statusLabel")}: ${todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending")}</strong></p>`;
       if (todo.lastEditedAt) {
-        content += `<p><em>Last Edited: ${todo.lastEditedAt}</em></p>`;
+        content += `<p><em>${chrome.i18n.getMessage("lastEditedLabel")}: ${formatTime(todo.lastEditedAt)}</em></p>`;
       }
       content += `<hr>`;
     });
@@ -466,14 +476,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* --- Export to Excel (CSV) --- */
   function exportToExcel() {
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Title,Description,Category,Created,Status,Last Edited\n";
+    csvContent += `${chrome.i18n.getMessage("titleLabel")},${chrome.i18n.getMessage("descriptionLabel")},${chrome.i18n.getMessage("categoryLabel")},${chrome.i18n.getMessage("createdLabel")},${chrome.i18n.getMessage("statusLabel")},${chrome.i18n.getMessage("lastEditedLabel")}\n`;
     todos.forEach(todo => {
       const row = [
         `"${todo.title.replace(/"/g, '""')}"`,
         `"${(todo.description || "").replace(/"/g, '""')}"`,
-        todo.category,
+        chrome.i18n.getMessage(todo.category),
         todo.createdAt,
-        todo.completed ? "Completed" : "Pending",
+        todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending"),
         todo.lastEditedAt || ""
       ].join(",");
       csvContent += row + "\n";
@@ -489,5 +499,121 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   exportExcelBtn.addEventListener('click', exportToExcel);
 
+
+   // --- Search Popup Functionality ---
+   const searchIcon = document.getElementById('search-icon');
+   const searchPopup = document.getElementById('search-popup');
+   const searchClose = document.getElementById('search-close');
+   const searchInput = document.getElementById('search-input');
+   const searchResults = document.getElementById('search-results');
+   const searchTabs = document.querySelectorAll('.search-tab');
+ 
+   let currentSearchFilter = 'all';
+ 
+   // Mở search popup khi nhấn vào icon search
+   searchIcon.addEventListener('click', () => {
+     searchPopup.style.display = 'flex';
+     searchInput.focus();
+   });
+ 
+   // Đóng search popup khi click nút đóng
+   searchClose.addEventListener('click', () => {
+     searchPopup.style.display = 'none';
+     searchInput.value = '';
+     searchResults.innerHTML = '';
+     resetSearchTabs(); // Khôi phục nội dung ban đầu cho các tab
+   });
+ 
+   // Đóng search popup khi click bên ngoài khối nội dung
+   searchPopup.addEventListener('click', function(event) {
+     if (event.target === searchPopup) {
+       searchPopup.style.display = 'none';
+       searchInput.value = '';
+       searchResults.innerHTML = '';
+       resetSearchTabs();
+     }
+   });
+ 
+   // Xử lý chuyển tab trong search popup
+   searchTabs.forEach(tab => {
+     tab.addEventListener('click', () => {
+       searchTabs.forEach(t => t.classList.remove('active'));
+       tab.classList.add('active');
+       currentSearchFilter = tab.getAttribute('data-filter');
+       performSearch();
+     });
+   });
+ 
+   // Hàm khôi phục nội dung ban đầu cho các tab (với chỉ số = 0)
+   function resetSearchTabs() {
+     document.querySelector('.search-tab[data-filter="all"]').innerHTML = chrome.i18n.getMessage("all") + "(0)";
+     document.querySelector('.search-tab[data-filter="today"]').innerHTML = chrome.i18n.getMessage("today") + "(0)";
+     document.querySelector('.search-tab[data-filter="week"]').innerHTML = chrome.i18n.getMessage("thisWeek") + "(0)";
+     document.querySelector('.search-tab[data-filter="month"]').innerHTML = chrome.i18n.getMessage("thisMonth") + "(0)";
+   }
+ 
+   // Hàm thực hiện tìm kiếm và cập nhật badge cho các tab
+   function performSearch() {
+     const query = searchInput.value.trim().toLowerCase();
+     if (!query) {
+       searchResults.innerHTML = '';
+       resetSearchTabs();
+       return;
+     }
+     // Lọc tất cả task theo query (title hoặc description)
+     const allResults = todos.filter(todo => {
+       return todo.title.toLowerCase().includes(query) ||
+              (todo.description && todo.description.toLowerCase().includes(query));
+     });
+     // Lọc theo từng category
+     const resultsAll = allResults;
+     const resultsToday = allResults.filter(todo => todo.category === 'today');
+     const resultsWeek = allResults.filter(todo => todo.category === 'week');
+     const resultsMonth = allResults.filter(todo => todo.category === 'month');
+ 
+     // Cập nhật badge cho các tab
+     document.querySelector('.search-tab[data-filter="all"]').innerHTML = chrome.i18n.getMessage("all") + `(${resultsAll.length})`;
+     document.querySelector('.search-tab[data-filter="today"]').innerHTML = chrome.i18n.getMessage("today") + `(${resultsToday.length})`;
+     document.querySelector('.search-tab[data-filter="week"]').innerHTML = chrome.i18n.getMessage("thisWeek") + `(${resultsWeek.length})`;
+     document.querySelector('.search-tab[data-filter="month"]').innerHTML = chrome.i18n.getMessage("thisMonth") + `(${resultsMonth.length})`;
+ 
+     // Chọn kết quả hiển thị theo tab được chọn
+     let filtered = [];
+     if (currentSearchFilter === 'all') {
+       filtered = resultsAll;
+     } else if (currentSearchFilter === 'today') {
+       filtered = resultsToday;
+     } else if (currentSearchFilter === 'week') {
+       filtered = resultsWeek;
+     } else if (currentSearchFilter === 'month') {
+       filtered = resultsMonth;
+     }
+ 
+     // Hiển thị kết quả
+     let resultsCountHTML = `<div class="search-results-count">${filtered.length} ${chrome.i18n.getMessage("resultsFound")}</div>`;
+     searchResults.innerHTML = '';
+     if (filtered.length === 0) {
+       searchResults.innerHTML = `<div class="search-no-result">${chrome.i18n.getMessage("noTasksFound")}</div>`;
+     } else {
+       searchResults.innerHTML = resultsCountHTML;
+       filtered.forEach(todo => {
+         const item = document.createElement('div');
+         item.classList.add('search-result-item');
+         item.textContent = todo.title;
+         // Khi click vào kết quả, mở chi tiết task và ẩn popup
+         item.addEventListener('click', () => {
+           showDetail(todo);
+           searchPopup.style.display = 'none';
+           searchInput.value = '';
+           searchResults.innerHTML = '';
+           resetSearchTabs();
+         });
+         searchResults.appendChild(item);
+       });
+     }
+   }
+ 
+   // Lắng nghe sự kiện nhập liệu để thực hiện tìm kiếm
+   searchInput.addEventListener('input', performSearch);
   loadTodos();
 });

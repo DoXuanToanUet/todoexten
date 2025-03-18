@@ -1,0 +1,143 @@
+{
+    "extensionName": {
+      "message": "Modern TodoList",
+      "description": "Extension name"
+    },
+    "extensionDescription": {
+      "message": "Modern TodoList application with time categorization",
+      "description": "Extension description"
+    },
+    "newTask": {
+      "message": "Today's Task",
+      "description": "Main title of the page"
+    },
+    "dateSubtitle": {
+      "message": "Wednesday, 11 May",
+      "description": "Date information"
+    },
+    "addNewTask": {
+      "message": "New Task",
+      "description": "Button text for adding a new task"
+    },
+    "taskTitlePlaceholder": {
+      "message": "Task Title...",
+      "description": "Placeholder for task title"
+    },
+    "taskDescPlaceholder": {
+      "message": "Task Description (optional)",
+      "description": "Placeholder for task description"
+    },
+    "today": {
+      "message": "Today",
+      "description": "Today category"
+    },
+    "tomorrow": {
+      "message": "Tomorrow",
+      "description": "Tomorrow category"
+    },
+    "thisWeek": {
+      "message": "This Week",
+      "description": "Week category"
+    },
+    "thisMonth": {
+      "message": "This Month",
+      "description": "Month category"
+    },
+    "addBtn": {
+      "message": "Add",
+      "description": "Add button"
+    },
+    "taskError": {
+      "message": "Task title is required.",
+      "description": "Error message when task title is missing"
+    },
+    "all": {
+      "message": "All",
+      "description": "Display all tasks"
+    },
+    "back": {
+      "message": "Back",
+      "description": "Back button"
+    },
+    "exportExcel": {
+      "message": "Export to Excel",
+      "description": "Export to Excel button"
+    },
+    "exportWord": {
+      "message": "Export to Word",
+      "description": "Export to Word button"
+    },
+    "companyName": {
+      "message": "Your Company. All rights reserved.",
+      "description": "Copyright info"
+    },
+    "noTaskNotification": {
+      "message": "No tasks available",
+      "description": "Notification when there are no tasks for today"
+    },
+    "noTasks": {
+      "message": "No tasks",
+      "description": "Notification when task list is empty"
+    },
+    "uncompleted": {
+      "message": "Uncompleted",
+      "description": "Header for uncompleted tasks"
+    },
+    "completed": {
+      "message": "Completed",
+      "description": "Header for completed tasks"
+    },
+    "edit": {
+      "message": "Edit",
+      "description": "Edit button"
+    },
+    "delete": {
+      "message": "Delete",
+      "description": "Delete button"
+    },
+    "noDescription": {
+      "message": "No description provided",
+      "description": "Message when no description is provided for the task"
+    },
+    "categoryLabel": {
+      "message": "Category",
+      "description": "Label for category"
+    },
+    "createdLabel": {
+      "message": "Created",
+      "description": "Label for created date"
+    },
+    "lastEditedLabel": {
+      "message": "Last Edited",
+      "description": "Label for last edited date"
+    },
+    "todoListExportTitle": {
+      "message": "Todo List Export",
+      "description": "Title for the exported file"
+    },
+    "todoListHeader": {
+      "message": "Todo List",
+      "description": "Header title for the todo list interface"
+    },
+    "statusLabel": {
+      "message": "Status",
+      "description": "Label for status"
+    },
+    "pending": {
+      "message": "Pending",
+      "description": "Status indicating task is pending"
+    },
+    "titleLabel": {
+      "message": "Title",
+      "description": "Label for title in exported file"
+    },
+    "descriptionLabel": {
+      "message": "Description",
+      "description": "Label for description in exported file"
+    },
+    "jobToday": {
+      "message": "Today's task",
+      "description": "Today's task"
+    }
+  }
+  
