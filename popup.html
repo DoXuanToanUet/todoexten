@@ -74,6 +74,10 @@
     .icons span:hover {
       color: var(--primary-color);
     }
+    /* Icon Change Theme */
+    #change-theme {
+      font-size: 18px;
+    }
     /* Notification icon với badge */
     #notification-icon {
       position: relative;
@@ -122,6 +126,51 @@
     }
     .notification-box li:last-child {
       border-bottom: none;
+    }
+    /* Theme Picker */
+    #theme-picker {
+      position: absolute;
+      top: 50px;
+      right: 50px;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      z-index: 20;
+      display: none;
+      width: 280px;
+    }
+    #theme-picker label {
+      font-size: 13px;
+      margin-right: 5px;
+    }
+    #theme-picker input[type="color"],
+    #theme-picker input[type="text"] {
+      border: none;
+      padding: 4px;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    #theme-picker input[type="text"] {
+      width: 100%;
+    }
+    #theme-picker .swatch {
+      border: none;
+      width: 30px;
+      height: 30px;
+      margin-right: 4px;
+      cursor: pointer;
+    }
+    #theme-picker button {
+      margin-top: 8px;
+      padding: 4px 8px;
+      border: none;
+      border-radius: var(--border-radius);
+      background: var(--primary-color);
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
     }
     /* MAIN CONTENT */
     .main {
@@ -268,6 +317,10 @@
       font-size: 14px;
       color: var(--gray-light);
       margin-top: 5px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3; /* Hiển thị tối đa 3 dòng */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .todo-item .task-meta {
       font-size: 11px;
@@ -415,12 +468,6 @@
       font-size: 12px;
       color: #888;
     }
-    .task-desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* Hiển thị tối đa 3 dòng */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
   </style>
 </head>
 <body>
@@ -434,12 +481,41 @@
     </div>
     <div class="icons">
       <span id="toggle-dark-mode">🌙</span>
+      <span id="change-theme">🎨</span>
       <span id="notification-icon">🔔
         <span id="notif-badge">0</span>
       </span>
       <span id="user-icon">👤</span>
     </div>
   </header>
+
+  <!-- Theme Picker -->
+  <div id="theme-picker">
+    <div>
+      <label for="primaryColorPicker">Primary Color:</label>
+      <input type="color" id="primaryColorPicker" value="#3a66f7">
+    </div>
+    <div style="margin-top: 8px;">
+      <label for="bgColorPicker">Background Color:</label>
+      <input type="color" id="bgColorPicker" value="#f8f9fb">
+    </div>
+    <div style="margin-top: 8px;">
+      <label for="primaryGradientInput">Primary Gradient (Optional):</label>
+      <input type="text" id="primaryGradientInput" placeholder="linear-gradient(45deg, #2F7C89, #2F7C83)">
+    </div>
+    <div style="margin-top: 8px;">
+      <label for="bgGradientInput">Background Gradient (Optional):</label>
+      <input type="text" id="bgGradientInput" placeholder="linear-gradient(45deg, #f8f9fb, #ccc)">
+    </div>
+    <div style="margin-top: 8px;">
+      <span>Suggestions: </span>
+      <button class="swatch" data-gradient="linear-gradient(45deg, #2F7C89, #2F7C83)" style="background: linear-gradient(45deg, #2F7C89, #2F7C83);"></button>
+    </div>
+    <div style="margin-top: 8px;">
+      <button id="applyThemeBtn">Apply</button>
+      <button id="resetThemeBtn">Reset</button>
+    </div>
+  </div>
 
   <!-- Notification Dropdown -->
   <div class="notification-box" id="notification-box">

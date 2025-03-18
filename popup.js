@@ -3,11 +3,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const timeEl = document.querySelector('.time');
   const dateEl = document.querySelector('.date');
   const darkModeToggle = document.getElementById('toggle-dark-mode');
+  const changeThemeIcon = document.getElementById('change-theme');
   const notificationIcon = document.getElementById('notification-icon');
   const notificationBox = document.getElementById('notification-box');
   const notificationList = document.getElementById('notification-list');
   const notifBadge = document.getElementById('notif-badge');
   const notifCountEl = document.getElementById('notif-count');
+
+  // Phần tử Theme Picker
+  const themePicker = document.getElementById('theme-picker');
+  const primaryColorPicker = document.getElementById('primaryColorPicker');
+  const bgColorPicker = document.getElementById('bgColorPicker');
+  const primaryGradientInput = document.getElementById('primaryGradientInput');
+  const bgGradientInput = document.getElementById('bgGradientInput');
+  const applyThemeBtn = document.getElementById('applyThemeBtn');
+  const resetThemeBtn = document.getElementById('resetThemeBtn');
+
+  // Swatch gợi ý
+  document.querySelectorAll('.swatch').forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      primaryGradientInput.value = swatch.getAttribute('data-gradient');
+    });
+  });
 
   // Phần tử New Task
   const openAddTaskBtn = document.getElementById('openAddTask');
@@ -56,6 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
+  /* --- Load theme colors từ chrome.storage --- */
+  chrome.storage.sync.get(['primaryColor', 'bgColor'], (data) => {
+    if (data.primaryColor) {
+      document.documentElement.style.setProperty('--primary-color', data.primaryColor);
+      primaryColorPicker.value = data.primaryColor.startsWith("linear-gradient") ? "#3a66f7" : data.primaryColor;
+    }
+    if (data.bgColor) {
+      document.documentElement.style.setProperty('--background-color', data.bgColor);
+      bgColorPicker.value = data.bgColor.startsWith("linear-gradient") ? "#f8f9fb" : data.bgColor;
+    }
+  });
+
   /* --- Dark Mode --- */
   chrome.storage.sync.get('darkMode', (data) => {
     if (data.darkMode) {
@@ -70,6 +99,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const isDark = document.body.classList.contains('dark-mode');
     chrome.storage.sync.set({ darkMode: isDark });
     darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+  });
+
+  /* --- Change Theme --- */
+  changeThemeIcon.addEventListener('click', () => {
+    themePicker.style.display = themePicker.style.display === 'block' ? 'none' : 'block';
+  });
+  applyThemeBtn.addEventListener('click', () => {
+    let primaryValue = primaryColorPicker.value;
+    let bgValue = bgColorPicker.value;
+    if (primaryGradientInput.value.trim() !== "") {
+      primaryValue = primaryGradientInput.value.trim();
+    }
+    if (bgGradientInput.value.trim() !== "") {
+      bgValue = bgGradientInput.value.trim();
+    }
+    document.documentElement.style.setProperty('--primary-color', primaryValue);
+    document.documentElement.style.setProperty('--background-color', bgValue);
+    chrome.storage.sync.set({ primaryColor: primaryValue, bgColor: bgValue });
+    themePicker.style.display = 'none';
+  });
+  resetThemeBtn.addEventListener('click', () => {
+    const defaultPrimary = "#3a66f7";
+    const defaultBg = "#f8f9fb";
+    primaryColorPicker.value = defaultPrimary;
+    bgColorPicker.value = defaultBg;
+    primaryGradientInput.value = "";
+    bgGradientInput.value = "";
+    document.documentElement.style.setProperty('--primary-color', defaultPrimary);
+    document.documentElement.style.setProperty('--background-color', defaultBg);
+    chrome.storage.sync.set({ primaryColor: defaultPrimary, bgColor: defaultBg });
   });
 
   /* --- Notification --- */
@@ -174,7 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
         createdAt: new Date().toISOString(),
         lastEditedAt: null,
       };
-      todos.push(newTodo);
+      // Thêm mới vào đầu mảng
+      todos.unshift(newTodo);
     }
     addTaskGroup.style.display = "none";
     saveTodos();
@@ -194,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="task-title">${todo.title}</span>
           <span class="task-meta">${formatTime(todo.createdAt)} | ${todo.category}</span>
         </div>
-        <div class="task-desc">${truncate(todo.description) ? truncate(todo.description) : ""}</div>
+        <div class="task-desc">${truncate(todo.description, 100)}</div>
       </div>
       <div class="actions">
         <div class="check-circle ${todo.completed ? "checked" : ""}"></div>
@@ -243,27 +303,25 @@ document.addEventListener('DOMContentLoaded', () => {
     todoList.appendChild(item);
   }
 
-  /* --- Render danh sách Todos với pagination và phân chia theo trạng thái --- */
+  /* --- Render danh sách Todos với phân trang và phân chia theo trạng thái --- */
   function renderTodos() {
-    // Lọc todo theo tab hiện tại
     let filtered = todos.filter((todo) => {
       if (currentFilter === "all") return true;
       return todo.category === currentFilter;
     });
 
-    // Cập nhật số lượng trên các tab
     allCount.textContent = `(${todos.length})`;
     todayCount.textContent = `(${todos.filter((t) => t.category === "today").length})`;
     tomorrowCount.textContent = `(${todos.filter((t) => t.category === "tomorrow").length})`;
     weekCount.textContent = `(${todos.filter((t) => t.category === "week").length})`;
     monthCount.textContent = `(${todos.filter((t) => t.category === "month").length})`;
 
-    // Với tab "all", "today" và "tomorrow", sắp xếp theo trạng thái (chưa hoàn thành trước, hoàn thành sau)
     if (currentFilter === "all" || currentFilter === "today" || currentFilter === "tomorrow") {
-      filtered.sort((a, b) => a.completed - b.completed);
+      const pending = filtered.filter(todo => !todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const completed = filtered.filter(todo => todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      filtered = [...pending, ...completed];
     }
 
-    // Áp dụng phân trang: tất cả các tab đều hiển thị 10 task mỗi trang
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
     if (currentPage > totalPages) currentPage = 1;
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -276,7 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Khi ở tab "all", "today", "tomorrow" chèn tiêu đề phân chia nếu có
     if (currentFilter === "all" || currentFilter === "today" || currentFilter === "tomorrow") {
       let renderedSection = { pending: false, completed: false };
       pageItems.forEach(todo => {
@@ -297,7 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTodoItem(todo);
       });
     } else {
-      // Với tab "week", "month" không cần phân chia trạng thái
       pageItems.forEach(renderTodoItem);
     }
 
@@ -358,6 +414,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return date.toLocaleString();
   }
 
+  /* --- Hàm cắt chuỗi mô tả --- */
+  function truncate(text, maxLength) {
+    return text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  }
+
   /* --- Detail View --- */
   function showDetail(todo) {
     detailContent.innerHTML = `
@@ -401,9 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.removeChild(link);
   }
   exportBtn.addEventListener('click', exportToWord);
-  function truncate(text, maxLength) {
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  }
+
   /* --- Export to Excel (CSV) --- */
   function exportToExcel() {
     let csvContent = "data:text/csv;charset=utf-8,";
