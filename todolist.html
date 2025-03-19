@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Advanced Todo List with Detail & Badge Filter</title>
+  <style>
+    /* --- UI CƠ BẢN --- */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container {
+      background: #fff;
+      width: 600px;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    form input[type="text"],
+    form textarea,
+    form select,
+    form input[type="datetime-local"] {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      width: 100%;
+    }
+    form button {
+      padding: 0.75rem;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    form button:hover {
+      background: #0056b3;
+    }
+    .custom-category {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .custom-category input {
+      flex: 1;
+    }
+    /* --- Filter & Badge --- */
+    .filter {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .filter button {
+      margin: 0.25rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: #6c757d;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      position: relative;
+    }
+    .filter button.active {
+      background: #007bff;
+    }
+    .badge {
+      display: inline-block;
+      background: #fff;
+      color: #333;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 12px;
+      margin-left: 4px;
+    }
+    .badge.completed {
+      background: #28a745;
+      color: #fff;
+    }
+    .badge.uncompleted {
+      background: #ffc107;
+      color: #fff;
+    }
+    /* --- Task List --- */
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    li {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #fafafa;
+    }
+    li.completed .title {
+      text-decoration: line-through;
+      color: #888;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .info {
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .actions {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .actions button {
+      padding: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .actions button.complete-btn {
+      background: #28a745;
+      color: #fff;
+    }
+    .actions button.delete-btn {
+      background: #dc3545;
+      color: #fff;
+    }
+    .actions button.detail-btn {
+      background: #17a2b8;
+      color: #fff;
+    }
+    /* --- Modal chi tiết task --- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 1rem;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      color: #aaa;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Advanced Todo List</h1>
+    <!-- Form thêm task -->
+    <form id="task-form">
+      <input type="text" id="task-title" placeholder="Task Title" required>
+      <textarea id="task-desc" placeholder="Task Description" rows="2" required></textarea>
+      <div style="display: flex; gap: 1rem;">
+        <select id="task-category" style="flex:1;"></select>
+        <input type="datetime-local" id="task-due-date" style="flex:1;" required>
+      </div>
+      <button type="submit">Add Task</button>
+      <!-- Tạo custom category -->
+      <div class="custom-category">
+        <input type="text" id="new-category" placeholder="Add new category">
+        <button type="button" id="add-category">Add Category</button>
+      </div>
+    </form>
+    <!-- Bộ lọc task -->
+    <div class="filter" id="filter-container"></div>
+    <!-- Danh sách task -->
+    <ul id="task-list"></ul>
+  </div>
+
+  <!-- Modal chi tiết task -->
+  <div id="task-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="close-modal">&times;</span>
+      <h2 id="modal-title">Task Detail</h2>
+      <p id="modal-description"></p>
+      <p class="info" id="modal-category"></p>
+      <p class="info" id="modal-dates"></p>
+      <p class="info" id="modal-status"></p>
+    </div>
+  </div>
+
+  <script>
+    // ----------------- Dữ liệu -----------------
+    let tasks = [];
+    let categories = [
+      { value: "work", text: "Work" },
+      { value: "homework", text: "Homework" },
+      { value: "personal", text: "Personal" }
+    ];
+    let currentFilter = "all";
+
+    // ----------------- Lưu và Load -----------------
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+    function loadTasks() {
+      const saved = localStorage.getItem("tasks");
+      tasks = saved ? JSON.parse(saved) : [];
+    }
+    function saveCategories() {
+      localStorage.setItem("categories", JSON.stringify(categories));
+    }
+    function loadCategories() {
+      const saved = localStorage.getItem("categories");
+      categories = saved ? JSON.parse(saved) : categories;
+      updateCategoryOptions();
+      updateFilterButtons();
+    }
+
+    // ----------------- Cập nhật giao diện -----------------
+    function updateCategoryOptions() {
+      const select = document.getElementById("task-category");
+      select.innerHTML = "";
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.value;
+        option.innerText = cat.text;
+        select.appendChild(option);
+      });
+    }
+
+    // Hàm kiểm tra task có thỏa filter nào đó không (không dùng currentFilter)
+    function matchesFilter(task, filter) {
+      const dueDate = new Date(task.dueDate);
+      const now = new Date();
+      switch(filter) {
+        case "today":
+          return isSameDay(dueDate, now);
+        case "tomorrow":
+          return isTomorrow(dueDate);
+        case "thisWeek":
+          return isThisWeek(dueDate);
+        case "planned":
+          return !task.completed && dueDate > now;
+        case "completed":
+          return task.completed;
+        case "all":
+        default:
+          return true;
+      }
+    }
+
+    // Các hàm tiện ích ngày tháng
+    function isSameDay(d1, d2) {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate();
+    }
+    function isTomorrow(date) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return isSameDay(date, tomorrow);
+    }
+    function isThisWeek(date) {
+      const now = new Date();
+      const firstDayOfWeek = new Date(now);
+      firstDayOfWeek.setDate(now.getDate() - now.getDay() + 1); // Giả sử tuần bắt đầu từ thứ 2
+      const lastDayOfWeek = new Date(firstDayOfWeek);
+      lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+      return date >= firstDayOfWeek && date <= lastDayOfWeek;
+    }
+
+    // ----------------- Filter Buttons với Badge -----------------
+    function updateFilterButtons() {
+      const filterContainer = document.getElementById("filter-container");
+      filterContainer.innerHTML = "";
+      const filters = [
+        { key: "all", label: "All" },
+        { key: "today", label: "Today" },
+        { key: "tomorrow", label: "Tomorrow" },
+        { key: "thisWeek", label: "This Week" },
+        { key: "planned", label: "Planned" },
+        { key: "completed", label: "Completed" }
+      ];
+      filters.forEach(f => {
+        // Tính số lượng task cho từng filter
+        let counts = { completed: 0, uncompleted: 0 };
+        tasks.forEach(task => {
+          if (matchesFilter(task, f.key)) {
+            task.completed ? counts.completed++ : counts.uncompleted++;
+          }
+        });
+        const btn = document.createElement("button");
+        btn.className = "filter-btn" + (currentFilter === f.key ? " active" : "");
+        btn.dataset.filter = f.key;
+        btn.innerText = f.label;
+        // Thêm badge cho completed và uncompleted
+        const badgeUn = document.createElement("span");
+        badgeUn.className = "badge uncompleted";
+        badgeUn.innerText = counts.uncompleted;
+        const badgeCom = document.createElement("span");
+        badgeCom.className = "badge completed";
+        badgeCom.innerText = counts.completed;
+        btn.appendChild(badgeUn);
+        btn.appendChild(badgeCom);
+        btn.addEventListener("click", filterHandler);
+        filterContainer.appendChild(btn);
+      });
+    }
+    function filterHandler(e) {
+      currentFilter = e.target.dataset.filter || e.target.parentElement.dataset.filter;
+      updateFilterButtons();
+      renderTasks();
+    }
+
+    // ----------------- Render Task List -----------------
+    function renderTasks() {
+      const taskList = document.getElementById("task-list");
+      taskList.innerHTML = "";
+      tasks.forEach((task, index) => {
+        if (!matchesFilter(task, currentFilter)) return;
+        const li = document.createElement("li");
+        if (task.completed) li.classList.add("completed");
+
+        // Header: title và category
+        const header = document.createElement("div");
+        header.className = "header";
+        const title = document.createElement("div");
+        title.className = "title";
+        title.innerText = task.title;
+        const catBadge = document.createElement("span");
+        catBadge.className = "info";
+        catBadge.innerText = " [" + task.category + "]";
+        header.appendChild(title);
+        header.appendChild(catBadge);
+
+        // Mô tả
+        const desc = document.createElement("p");
+        desc.innerText = task.description;
+        desc.style.margin = "0.5rem 0";
+
+        // Thông tin thời gian
+        const info = document.createElement("div");
+        info.className = "info";
+        const dateCreated = new Date(task.dateCreated);
+        const dueDate = new Date(task.dueDate);
+        info.innerText = "Created: " + dateCreated.toLocaleString() + " | Due: " + dueDate.toLocaleString();
+
+        // Nút hành động: Complete, Detail, Delete
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        const completeBtn = document.createElement("button");
+        completeBtn.className = "complete-btn";
+        completeBtn.innerText = task.completed ? "Undo" : "Complete";
+        completeBtn.addEventListener("click", () => {
+          task.completed = !task.completed;
+          saveTasks();
+          updateFilterButtons();
+          renderTasks();
+        });
+        const detailBtn = document.createElement("button");
+        detailBtn.className = "detail-btn";
+        detailBtn.innerText = "Detail";
+        detailBtn.addEventListener("click", () => showTaskDetail(task));
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.innerText = "Delete";
+        deleteBtn.addEventListener("click", () => {
+          tasks.splice(index, 1);
+          saveTasks();
+          updateFilterButtons();
+          renderTasks();
+        });
+        actions.appendChild(completeBtn);
+        actions.appendChild(detailBtn);
+        actions.appendChild(deleteBtn);
+
+        li.appendChild(header);
+        li.appendChild(desc);
+        li.appendChild(info);
+        li.appendChild(actions);
+        taskList.appendChild(li);
+      });
+    }
+
+    // ----------------- Modal Detail Task -----------------
+    function showTaskDetail(task) {
+      const modal = document.getElementById("task-modal");
+      document.getElementById("modal-title").innerText = task.title;
+      document.getElementById("modal-description").innerText = task.description;
+      document.getElementById("modal-category").innerText = "Category: " + task.category;
+      const dateCreated = new Date(task.dateCreated);
+      const dueDate = new Date(task.dueDate);
+      document.getElementById("modal-dates").innerText = "Created: " + dateCreated.toLocaleString() + " | Due: " + dueDate.toLocaleString();
+      document.getElementById("modal-status").innerText = "Status: " + (task.completed ? "Completed" : "Pending");
+      modal.style.display = "block";
+    }
+    document.getElementById("close-modal").addEventListener("click", () => {
+      document.getElementById("task-modal").style.display = "none";
+    });
+    window.addEventListener("click", e => {
+      if (e.target === document.getElementById("task-modal")) {
+        document.getElementById("task-modal").style.display = "none";
+      }
+    });
+
+    // ----------------- Xử lý thêm task & category -----------------
+    document.getElementById("task-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("task-title").value.trim();
+      const description = document.getElementById("task-desc").value.trim();
+      const category = document.getElementById("task-category").value;
+      const dueDate = document.getElementById("task-due-date").value;
+      if (!title || !description || !dueDate) return;
+      const newTask = {
+        title,
+        description,
+        category,
+        dateCreated: new Date().toISOString(),
+        dueDate,
+        completed: false
+      };
+      tasks.push(newTask);
+      saveTasks();
+      updateFilterButtons();
+      renderTasks();
+      e.target.reset();
+    });
+    document.getElementById("add-category").addEventListener("click", () => {
+      const newCatText = document.getElementById("new-category").value.trim();
+      if (!newCatText) return;
+      const slug = newCatText.toLowerCase().replace(/\s+/g, "-");
+      if (categories.some(cat => cat.value === slug)) {
+        alert("Category đã tồn tại!");
+        return;
+      }
+      categories.push({ value: slug, text: newCatText });
+      saveCategories();
+      updateCategoryOptions();
+      updateFilterButtons();
+      document.getElementById("new-category").value = "";
+    });
+
+    // ----------------- Khởi tạo dữ liệu -----------------
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCategories();
+      loadTasks();
+      updateFilterButtons();
+      renderTasks();
+    });
+  </script>
+</body>
+</html>

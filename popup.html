@@ -21,7 +21,7 @@
       box-sizing: border-box;
     }
     body {
-      min-width: 400px; /* Kích thước popup extension */
+      min-width: 500px; /* Kích thước popup extension */
       min-height: 500px;
       background: var(--background-color);
       font-family: var(--font-family);
@@ -198,15 +198,16 @@
       cursor: pointer;
       font-weight: 500;
       font-size: 14px;
+      height: 40px;
     }
     .btn-primary {
-      background: var(--primary-color);
+      background: #25d366;
       color: #fff;
       transition: background 0.3s;
     }
-    .btn-primary:hover {
+    /* .btn-primary:hover {
       background: var(--secondary-color);
-    }
+    } */
     /* New Task Interface */
     .input-group {
       display: flex;
@@ -636,11 +637,311 @@
   text-align: center;
   color: #888;
 }
+/* ------------------------------
+   Category Management Popup Styling
+------------------------------ */
+#category-management {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1200;
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+#category-management .category-header {
+  background: var(--primary-color, #3a66f7);
+  color: #fff;
+  padding: 12px 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#category-management .category-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+#category-management .category-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+#category-management .category-header button:hover {
+  color: #ffdd57;
+}
+
+#category-management .category-content {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#category-management ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#category-management ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+#category-management ul li:last-child {
+  border-bottom: none;
+}
+
+#category-management ul li span {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+#category-management ul li button {
+  margin-left: 5px;
+  padding: 4px 8px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#category-management ul li button:first-of-type {
+  background: #f0ad4e;
+  color: #fff;
+}
+
+#category-management ul li button:first-of-type:hover {
+  background: #ec971f;
+}
+
+#category-management ul li button:last-of-type {
+  background: #d9534f;
+  color: #fff;
+}
+
+#category-management ul li button:last-of-type:hover {
+  background: #c9302c;
+}
+
+#category-management .category-form {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+#category-management .category-form input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+#category-management .category-form button {
+  padding: 8px 12px;
+  background: var(--primary-color, #3a66f7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+#category-management .category-form button:hover {
+  background: #335bb5;
+}
+/* ------------------------------
+   Category Management Popup Styling
+------------------------------ */
+#category-management {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 350px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  z-index: 1200;
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+#category-management .category-header {
+  background: var(--primary-color, #3a66f7);
+  color: #fff;
+  padding: 12px 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#category-management .category-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+#category-management .category-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+#category-management .category-header button:hover {
+  color: #ffdd57;
+}
+
+#category-management .category-content {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#category-management ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#category-management ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+#category-management ul li:last-child {
+  border-bottom: none;
+}
+
+#category-management ul li span {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+#category-management ul li button {
+  margin-left: 5px;
+  padding: 4px 8px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#category-management ul li button:first-of-type {
+  background: #f0ad4e;
+  color: #fff;
+}
+
+#category-management ul li button:first-of-type:hover {
+  background: #ec971f;
+}
+
+#category-management ul li button:last-of-type {
+  background: #d9534f;
+  color: #fff;
+}
+
+#category-management ul li button:last-of-type:hover {
+  background: #c9302c;
+}
+
+#category-management .category-form {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+#category-management .category-form input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+#category-management .category-form button {
+  padding: 8px 12px;
+  background: var(--primary-color, #3a66f7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+#category-management .category-form button:hover {
+  background: #335bb5;
+}
+
+/* ------------------------------
+   Overlay cho Category Popup
+------------------------------ */
+#category-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1150;
+  display: none;
+}
   </style>
 </head>
 <body>
-
   <!-- HEADER -->
   <header class="header">
     <div class="time-date">
@@ -651,7 +952,7 @@
     <div class="icons">
       <span id="toggle-dark-mode">🌙</span>
       <span id="change-theme">🎨</span>
-      <!-- Icon search mới -->
+      <!-- Icon search -->
       <span id="search-icon">🔍</span>
       <span id="notification-icon">🔔
         <span id="notif-badge">0</span>
@@ -661,40 +962,39 @@
   </header>
 
   <!-- Search Popup Overlay -->
-<div id="search-popup" class="search-popup" style="display: none;">
-  <div class="search-popup-content">
-    <button id="search-close">✖</button>
-    <input type="text" id="search-input" placeholder="__MSG_searchPlaceholder__" />
-    <!-- Thanh Tab cho kết quả tìm kiếm -->
-    <div class="search-tabs">
-      <div class="search-tab active" data-filter="all">__MSG_all__</div>
-      <div class="search-tab" data-filter="today">__MSG_today__</div>
-      <div class="search-tab" data-filter="week">__MSG_thisWeek__</div>
-      <div class="search-tab" data-filter="month">__MSG_thisMonth__</div>
+  <div id="search-popup" class="search-popup" style="display: none;">
+    <div class="search-popup-content">
+      <button id="search-close">✖</button>
+      <input type="text" id="search-input" placeholder="__MSG_searchPlaceholder__" />
+      <!-- Thanh Tab cho kết quả tìm kiếm -->
+      <div class="search-tabs">
+        <div class="search-tab active" data-filter="all">__MSG_all__</div>
+        <div class="search-tab" data-filter="today">__MSG_today__</div>
+        <div class="search-tab" data-filter="this week">__MSG_thisWeek__</div>
+        <div class="search-tab" data-filter="planned">Planned</div>
+      </div>
+      <!-- Vùng hiển thị kết quả -->
+      <div id="search-results" class="search-results"></div>
     </div>
-    <!-- Vùng hiển thị kết quả -->
-    <div id="search-results" class="search-results"></div>
   </div>
-</div>
 
   <!-- Theme Picker -->
   <div id="theme-picker">
-    <!-- Nội dung Theme Picker (giữ nguyên) -->
     <div>
       <label for="primaryColorPicker">Primary Color:</label>
-      <input type="color" id="primaryColorPicker" value="#3a66f7">
+      <input type="color" id="primaryColorPicker" value="#3a66f7" />
     </div>
     <div style="margin-top: 8px;">
       <label for="bgColorPicker">Background Color:</label>
-      <input type="color" id="bgColorPicker" value="#f8f9fb">
+      <input type="color" id="bgColorPicker" value="#f8f9fb" />
     </div>
     <div style="margin-top: 8px;">
       <label for="primaryGradientInput">Primary Gradient (Optional):</label>
-      <input type="text" id="primaryGradientInput" placeholder="linear-gradient(45deg, #2F7C89, #2F7C83)">
+      <input type="text" id="primaryGradientInput" placeholder="linear-gradient(45deg, #2F7C89, #2F7C83)" />
     </div>
     <div style="margin-top: 8px;">
       <label for="bgGradientInput">Background Gradient (Optional):</label>
-      <input type="text" id="bgGradientInput" placeholder="linear-gradient(45deg, #f8f9fb, #ccc)">
+      <input type="text" id="bgGradientInput" placeholder="linear-gradient(45deg, #f8f9fb, #ccc)" />
     </div>
     <div style="margin-top: 8px;">
       <span>Suggestions: </span>
@@ -719,30 +1019,49 @@
         <h1 class="title">__MSG_newTask__</h1>
         <p class="subtitle">__MSG_dateSubtitle__</p>
       </div>
-      <button class="btn btn-primary" id="openAddTask">+ __MSG_addNewTask__</button>
+      <!-- Hai nút: New Task và Category -->
+      <div class="header-buttons">
+        <button class="btn btn-primary" id="openAddTask">+ __MSG_addNewTask__</button>
+        <button class="btn btn-secondary" id="openCategoryManager">Category</button>
+      </div>
     </div>
 
     <!-- New Task Interface -->
     <div class="input-group" id="addTaskGroup" style="display: none;">
       <input type="text" id="todoTitle" placeholder="__MSG_taskTitlePlaceholder__" />
       <textarea id="todoDesc" placeholder="__MSG_taskDescPlaceholder__"></textarea>
-      <select id="todoCategory">
-        <option value="today">__MSG_today__</option>
-        <option value="tomorrow">__MSG_tomorrow__</option>
-        <option value="week">__MSG_thisWeek__</option>
-        <option value="month">__MSG_thisMonth__</option>
-      </select>
+      <!-- Dropdown cho Category (sẽ được cập nhật từ default & custom) -->
+      <select id="todoCategory"></select>
+      <!-- Input ngày giờ cho task -->
+      <input type="datetime-local" id="todoDueDate" placeholder="Due Date &amp; Time" />
       <button id="addBtn">__MSG_addBtn__</button>
       <div id="taskError">__MSG_taskError__</div>
     </div>
 
-    <!-- Tabs -->
+    <!-- Category Management Popup với Overlay -->
+    <div id="category-overlay"></div>
+    <div id="category-management">
+      <div class="category-header">
+        <h2>Category Management</h2>
+        <button id="closeCategoryManager">×</button>
+      </div>
+      <div class="category-content">
+        <ul id="category-list"></ul>
+        <div class="category-form">
+          <input type="text" id="new-cat-input" placeholder="New Category" />
+          <button id="add-cat-btn">Add Category</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs (Filters) -->
     <div class="tabs">
       <button class="tab active" data-category="all">__MSG_all__ <span class="count" id="allCount">(0)</span></button>
       <button class="tab" data-category="today">__MSG_today__ <span class="count" id="todayCount">(0)</span></button>
       <button class="tab" data-category="tomorrow">__MSG_tomorrow__ <span class="count" id="tomorrowCount">(0)</span></button>
-      <button class="tab" data-category="week">__MSG_thisWeek__ <span class="count" id="weekCount">(0)</span></button>
-      <button class="tab" data-category="month">__MSG_thisMonth__ <span class="count" id="monthCount">(0)</span></button>
+      <button class="tab" data-category="this week">__MSG_thisWeek__ <span class="count" id="weekCount">(0)</span></button>
+      <button class="tab" data-category="planned">Planned <span class="count" id="plannedCount">(0)</span></button>
+      <button class="tab" data-category="completed">__MSG_completed__ <span class="count" id="completedCount">(0)</span></button>
     </div>
 
     <!-- Danh sách Todo -->
@@ -765,7 +1084,7 @@
     <div class="copyright">© 2025 __MSG_companyName__</div>
   </footer>
 
+  <!-- Include file JS của extension -->
   <script src="popup.js"></script>
 </body>
-
 </html>

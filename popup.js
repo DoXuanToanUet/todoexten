@@ -1,14 +1,13 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Tìm tất cả các token __MSG_key__ trong nội dung HTML và thay thế
+document.addEventListener('DOMContentLoaded', function () {
+  // Thay thế __MSG_key__ bằng thông điệp i18n
   document.body.innerHTML = document.body.innerHTML.replace(/__MSG_([a-zA-Z0-9_]+)__/g, function(match, p1) {
     return chrome.i18n.getMessage(p1);
   });
 
-  // Các đoạn code khác cho extension (ví dụ: xử lý sự kiện click, dark mode, vv)
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Phần tử header
+  // ============================
+  // Các biến tham chiếu HTML
+  // ============================
+  // Header, Theme, Notification
   const timeEl = document.querySelector('.time');
   const dateEl = document.querySelector('.date');
   const darkModeToggle = document.getElementById('toggle-dark-mode');
@@ -19,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const notifBadge = document.getElementById('notif-badge');
   const notifCountEl = document.getElementById('notif-count');
 
-  // Phần tử Theme Picker
+  // Theme Picker
   const themePicker = document.getElementById('theme-picker');
   const primaryColorPicker = document.getElementById('primaryColorPicker');
   const bgColorPicker = document.getElementById('bgColorPicker');
@@ -28,48 +27,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyThemeBtn = document.getElementById('applyThemeBtn');
   const resetThemeBtn = document.getElementById('resetThemeBtn');
 
-  // Swatch gợi ý
-  document.querySelectorAll('.swatch').forEach(swatch => {
-    swatch.addEventListener('click', () => {
-      primaryGradientInput.value = swatch.getAttribute('data-gradient');
-    });
-  });
-
-  // Phần tử New Task
+  // New Task
   const openAddTaskBtn = document.getElementById('openAddTask');
   const addTaskGroup = document.getElementById('addTaskGroup');
   const todoTitle = document.getElementById('todoTitle');
   const todoDesc = document.getElementById('todoDesc');
   const todoCategory = document.getElementById('todoCategory');
+  const todoDueDate = document.getElementById('todoDueDate');
   const addBtn = document.getElementById('addBtn');
   const taskError = document.getElementById('taskError');
 
-  // Phần tử liên quan đến todo list và tabs
+  // Category Management Popup
+  const openCategoryManagerBtn = document.getElementById('openCategoryManager');
+  const categoryManagementDiv = document.getElementById('category-management');
+  const closeCategoryManagerBtn = document.getElementById('closeCategoryManager');
+  const categoryListUl = document.getElementById('category-list');
+  const newCatInput = document.getElementById('new-cat-input');
+  const addCatBtn = document.getElementById('add-cat-btn');
+  const categoryOverlay = document.getElementById('category-overlay');
+
+  // Tabs (Filters), Todo List, Pagination
   const tabs = document.querySelectorAll('.tab');
   const todoList = document.getElementById('todoList');
   const paginationContainer = document.getElementById('pagination');
-  const allCount = document.getElementById('allCount');
-  const todayCount = document.getElementById('todayCount');
-  const tomorrowCount = document.getElementById('tomorrowCount');
-  const weekCount = document.getElementById('weekCount');
-  const monthCount = document.getElementById('monthCount');
 
   // Detail View
   const detailView = document.getElementById('detail-view');
   const detailContent = document.getElementById('detail-content');
   const backBtn = document.getElementById('back-btn');
 
-  // Footer Export Buttons
-  const exportBtn = document.getElementById('exportBtn');
+  // Footer (Export)
   const exportExcelBtn = document.getElementById('exportExcelBtn');
+  const exportBtn = document.getElementById('exportBtn');
 
+  // ============================
+  // Global Variables
+  // ============================
   let todos = [];
   let editingId = null;
   let currentFilter = 'all';
   let currentPage = 1;
-  const itemsPerPage = 10; // Số task mỗi trang
+  const itemsPerPage = 10;
 
-  /* --- Cập nhật đồng hồ realtime --- */
+  // Các category mặc định (không thể chỉnh sửa, xóa)
+  const defaultCategories = ["learning", "shopping", "game"];
+  // Các category do người dùng thêm
+  let customCategories = [];
+  // Biến lưu trữ khi đang sửa custom category (nếu null thì đang thêm mới)
+  let editingCategoryIndex = null;
+
+  // ============================
+  // Utility Functions
+  // ============================
   function updateClock() {
     const now = new Date();
     const hours = now.getHours().toString().padStart(2, '0');
@@ -82,7 +91,29 @@ document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 1000);
 
-  /* --- Load theme colors từ chrome.storage --- */
+  function isSameDay(date1, date2) {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+
+  function getWeekRange(referenceDate) {
+    const day = referenceDate.getDay();
+    const diffToMonday = (day === 0 ? 6 : day - 1);
+    const monday = new Date(referenceDate);
+    monday.setDate(referenceDate.getDate() - diffToMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    return { monday, sunday };
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // ============================
+  // Theme & Dark Mode
+  // ============================
   chrome.storage.sync.get(['primaryColor', 'bgColor'], (data) => {
     if (data.primaryColor) {
       document.documentElement.style.setProperty('--primary-color', data.primaryColor);
@@ -94,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  /* --- Dark Mode --- */
   chrome.storage.sync.get('darkMode', (data) => {
     if (data.darkMode) {
       document.body.classList.add('dark-mode');
@@ -110,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     darkModeToggle.textContent = isDark ? '☀️' : '🌙';
   });
 
-  /* --- Change Theme --- */
   changeThemeIcon.addEventListener('click', () => {
     themePicker.style.display = themePicker.style.display === 'block' ? 'none' : 'block';
   });
@@ -140,15 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.set({ primaryColor: defaultPrimary, bgColor: defaultBg });
   });
 
-  /* --- Notification --- */
+  // ============================
+  // Notification
+  // ============================
   function updateNotifications() {
     notificationList.innerHTML = "";
     const todayStr = new Date().toISOString().split('T')[0];
-    const pendingTodos = todos.filter(todo => todo.category === "today" && !todo.completed && todo.createdAt.startsWith(todayStr));
+    const pendingTodos = todos.filter(todo => {
+      if (!todo.dueDate) return false;
+      return !todo.completed && new Date(todo.dueDate).toISOString().startsWith(todayStr);
+    });
     notifBadge.textContent = pendingTodos.length;
     notifCountEl.textContent = pendingTodos.length;
     if (pendingTodos.length === 0) {
-      notificationList.innerHTML = "<li>" + chrome.i18n.getMessage("noTaskNotification") + "</li>";
+      notificationList.innerHTML = `<li>${chrome.i18n.getMessage("noTaskNotification")}</li>`;
     } else {
       pendingTodos.forEach(todo => {
         const li = document.createElement("li");
@@ -157,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
-  
   notificationIcon.addEventListener("click", () => {
     notificationBox.style.display = notificationBox.style.display === "block" ? "none" : "block";
   });
@@ -167,40 +200,130 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  /* --- New Task Interface --- */
-  openAddTaskBtn.addEventListener("click", () => {
-    if (addTaskGroup.style.display === "none" || addTaskGroup.style.display === "") {
-      addTaskGroup.style.display = "flex";
-      todoTitle.value = "";
-      todoDesc.value = "";
-      todoCategory.value = "today";
-      taskError.style.display = "none";
-      todoTitle.focus();
-    } else {
-      addTaskGroup.style.display = "none";
-    }
-  });
-
-  /* --- Sự kiện Thêm Task --- */
-  addBtn.addEventListener("click", addTodo);
-  todoTitle.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      addTodo();
-    }
-  });
-
-  /* --- Chọn Tab --- */
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      tabs.forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-      currentFilter = tab.dataset.category;
-      currentPage = 1;
-      renderTodos();
+  // ============================
+  // CATEGORY MANAGEMENT
+  // ============================
+  function loadCustomCategories() {
+    chrome.storage.sync.get("customCategories", (data) => {
+      if (data.customCategories) {
+        customCategories = data.customCategories;
+      } else {
+        customCategories = [];
+      }
+      updateCategorySelect();
+      updateCategoryList();
     });
+  }
+
+  // Cập nhật dropdown category cho New Task
+  function updateCategorySelect() {
+    todoCategory.innerHTML = "";
+    defaultCategories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = capitalize(cat);
+      todoCategory.appendChild(option);
+    });
+    customCategories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.textContent = cat;
+      todoCategory.appendChild(option);
+    });
+  }
+
+  // Cập nhật danh sách hiển thị trong giao diện Category Management
+  function updateCategoryList() {
+    categoryListUl.innerHTML = "";
+    // Hiển thị category mặc định (không thể chỉnh sửa, xóa)
+    defaultCategories.forEach(cat => {
+      const li = document.createElement("li");
+      li.textContent = capitalize(cat) + " (default)";
+      categoryListUl.appendChild(li);
+    });
+    // Hiển thị custom category với các nút Edit và Delete
+    customCategories.forEach((cat, index) => {
+      const li = document.createElement("li");
+      li.dataset.index = index;
+      const span = document.createElement("span");
+      span.textContent = cat;
+      li.appendChild(span);
+      // Nút Edit: thay vì prompt, cập nhật vào input và chuyển nút thành Update Category
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", () => {
+        newCatInput.value = cat;
+        editingCategoryIndex = index;
+        addCatBtn.textContent = "Update Category";
+      });
+      li.appendChild(editBtn);
+      // Nút Delete: xóa luôn không cần hỏi
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        customCategories.splice(index, 1);
+        chrome.storage.sync.set({ customCategories });
+        updateCategorySelect();
+        updateCategoryList();
+        // Nếu đang sửa category bị xóa, reset lại form
+        if (editingCategoryIndex === index) {
+          editingCategoryIndex = null;
+          newCatInput.value = "";
+          addCatBtn.textContent = "Add Category";
+        }
+      });
+      li.appendChild(delBtn);
+      categoryListUl.appendChild(li);
+    });
+  }
+
+  function existsCategory(catName) {
+    const lower = catName.toLowerCase();
+    const existsInDefault = defaultCategories.some(c => c.toLowerCase() === lower);
+    const existsInCustom = customCategories.some(c => c.toLowerCase() === lower);
+    return existsInDefault || existsInCustom;
+  }
+
+  // Sự kiện mở/đóng giao diện Category Management Popup (với overlay)
+  openCategoryManagerBtn.addEventListener("click", () => {
+    categoryManagementDiv.style.display = "block";
+    categoryOverlay.style.display = "block";
+  });
+  closeCategoryManagerBtn.addEventListener("click", () => {
+    categoryManagementDiv.style.display = "none";
+    categoryOverlay.style.display = "none";
+    // Reset form sửa category nếu có
+    editingCategoryIndex = null;
+    newCatInput.value = "";
+    addCatBtn.textContent = "Add Category";
   });
 
-  /* --- Load & Save Todos từ chrome.storage --- */
+  addCatBtn.addEventListener("click", () => {
+    const newCat = newCatInput.value.trim();
+    if (newCat === "") return;
+    if (existsCategory(newCat)) {
+      alert("Category already exists!");
+      return;
+    }
+    if (editingCategoryIndex !== null) {
+      // Cập nhật category đang sửa
+      customCategories[editingCategoryIndex] = newCat;
+      editingCategoryIndex = null;
+      addCatBtn.textContent = "Add Category";
+    } else {
+      customCategories.push(newCat);
+    }
+    chrome.storage.sync.set({ customCategories });
+    updateCategorySelect();
+    updateCategoryList();
+    newCatInput.value = "";
+  });
+
+  loadCustomCategories();
+
+  // ============================
+  // TASK MANAGEMENT
+  // ============================
   function loadTodos() {
     chrome.storage.sync.get("todos", (data) => {
       todos = data.todos || [];
@@ -211,38 +334,40 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveTodos() {
     chrome.storage.sync.set({ todos });
   }
-
-  /* --- Thêm hoặc Cập nhật Todo --- */
   function addTodo() {
     const title = todoTitle.value.trim();
     const desc = todoDesc.value.trim();
-    if (!title) {
+    const category = todoCategory.value;
+    const dueDateValue = todoDueDate.value;
+    if (!title || !dueDateValue) {
+      taskError.textContent = "Vui lòng nhập tiêu đề và ngày giờ cho task!";
       taskError.style.display = "block";
       return;
     } else {
       taskError.style.display = "none";
     }
-
+    const dueDateISO = new Date(dueDateValue).toISOString();
     if (editingId) {
-      const index = todos.findIndex((t) => t.id === editingId);
+      const index = todos.findIndex(t => t.id === editingId);
       if (index !== -1) {
         todos[index].title = title;
         todos[index].description = desc;
-        todos[index].category = todoCategory.value;
+        todos[index].category = category;
+        todos[index].dueDate = dueDateISO;
         todos[index].lastEditedAt = new Date().toISOString();
       }
       editingId = null;
     } else {
       const newTodo = {
         id: Date.now(),
-        title: title,
+        title,
         description: desc,
+        category,
+        dueDate: dueDateISO,
         completed: false,
-        category: todoCategory.value,
         createdAt: new Date().toISOString(),
-        lastEditedAt: null,
+        lastEditedAt: null
       };
-      // Thêm mới vào đầu mảng
       todos.unshift(newTodo);
     }
     addTaskGroup.style.display = "none";
@@ -250,36 +375,126 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTodos();
     updateNotifications();
   }
+  openAddTaskBtn.addEventListener("click", () => {
+    if (addTaskGroup.style.display === "none" || addTaskGroup.style.display === "") {
+      addTaskGroup.style.display = "flex";
+      todoTitle.value = "";
+      todoDesc.value = "";
+      todoCategory.value = defaultCategories[0];
+      todoDueDate.value = "";
+      taskError.style.display = "none";
+      todoTitle.focus();
+    } else {
+      addTaskGroup.style.display = "none";
+    }
+  });
+  addBtn.addEventListener("click", addTodo);
+  todoTitle.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") addTodo();
+  });
 
-  /* --- Render Todo Item --- */
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentFilter = tab.dataset.category;
+      currentPage = 1;
+      renderTodos();
+    });
+  });
+
+  function renderTodos() {
+    let filtered = todos.filter(todo => {
+      if (currentFilter === "all") return true;
+      if (currentFilter === "completed") return todo.completed;
+      if (!todo.dueDate) return false;
+      const due = new Date(todo.dueDate);
+      const now = new Date();
+      if (currentFilter === "today") {
+        return isSameDay(now, due);
+      } else if (currentFilter === "tomorrow") {
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        return isSameDay(tomorrow, due);
+      } else if (currentFilter === "this week") {
+        const { monday, sunday } = getWeekRange(now);
+        return due >= monday && due <= sunday;
+      } else if (currentFilter === "planned") {
+        const { sunday } = getWeekRange(now);
+        return due > sunday;
+      }
+    });
+    filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    document.getElementById('allCount').textContent = `(${todos.length})`;
+    document.getElementById('todayCount').textContent = `(${todos.filter(t => t.dueDate && isSameDay(new Date(t.dueDate), new Date())).length})`;
+    document.getElementById('tomorrowCount').textContent = `(${todos.filter(t => {
+      if (!t.dueDate) return false;
+      const tomorrow = new Date();
+      tomorrow.setDate(new Date().getDate() + 1);
+      return isSameDay(new Date(t.dueDate), tomorrow);
+    }).length})`;
+    document.getElementById('weekCount').textContent = `(${todos.filter(t => {
+      if (!t.dueDate) return false;
+      const { monday, sunday } = getWeekRange(new Date());
+      return new Date(t.dueDate) >= monday && new Date(t.dueDate) <= sunday;
+    }).length})`;
+    document.getElementById('plannedCount').textContent = `(${todos.filter(t => {
+      if (!t.dueDate) return false;
+      const { sunday } = getWeekRange(new Date());
+      return new Date(t.dueDate) > sunday;
+    }).length})`;
+    document.getElementById('completedCount').textContent = `(${todos.filter(t => t.completed).length})`;
+    const uncompleted = filtered.filter(todo => !todo.completed);
+    const completed = filtered.filter(todo => todo.completed);
+    todoList.innerHTML = "";
+    if (filtered.length === 0) {
+      todoList.innerHTML = `<div class="empty-message">No tasks found.</div>`;
+      paginationContainer.innerHTML = "";
+      return;
+    }
+    if (currentFilter !== "completed") {
+      if (uncompleted.length) {
+        const header = document.createElement("div");
+        header.className = "section-header";
+        header.textContent = "Uncompleted";
+        todoList.appendChild(header);
+        uncompleted.forEach(renderTodoItem);
+      }
+      if (completed.length) {
+        const header = document.createElement("div");
+        header.className = "section-header";
+        header.textContent = "Completed";
+        todoList.appendChild(header);
+        completed.forEach(renderTodoItem);
+      }
+    } else {
+      completed.forEach(renderTodoItem);
+    }
+    renderPagination(Math.ceil(filtered.length / itemsPerPage));
+  }
+
   function renderTodoItem(todo) {
     const item = document.createElement("div");
     item.classList.add("todo-item");
     if (todo.completed) item.classList.add("completed");
-
-    // Sử dụng các chuỗi đa ngôn ngữ cho nút Edit & Delete
     item.innerHTML = `
       <div class="content">
         <div class="header">
           <span class="task-title">${todo.title}</span>
-          <span class="task-meta">${formatTime(todo.createdAt)} | ${chrome.i18n.getMessage(todo.category)}</span>
+          <span class="task-meta">${new Date(todo.dueDate).toLocaleString()} | ${todo.category}</span>
         </div>
-        <div class="task-desc">${truncate(todo.description, 100)}</div>
+        <div class="task-desc">${todo.description.length > 100 ? todo.description.substring(0, 100) + "..." : todo.description}</div>
       </div>
       <div class="actions">
         <div class="check-circle ${todo.completed ? "checked" : ""}"></div>
-        <button class="edit-btn">${chrome.i18n.getMessage("edit")}</button>
-        <button class="delete-btn">${chrome.i18n.getMessage("delete")}</button>
+        <button class="edit-btn">Edit</button>
+        <button class="delete-btn">Delete</button>
       </div>
     `;
-
-    const contentDiv = item.querySelector('.content');
-    contentDiv.addEventListener("click", () => {
+    item.querySelector('.content').addEventListener("click", () => {
       showDetail(todo);
     });
-
-    const checkCircle = item.querySelector(".check-circle");
-    checkCircle.addEventListener("click", (e) => {
+    item.querySelector(".check-circle").addEventListener("click", (e) => {
       e.stopPropagation();
       todo.completed = !todo.completed;
       if (todo.completed) {
@@ -287,99 +502,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       saveTodos();
       renderTodos();
-      updateNotifications();
     });
-
-    const editBtn = item.querySelector(".edit-btn");
-    editBtn.addEventListener("click", (e) => {
+    item.querySelector(".edit-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       editingId = todo.id;
       todoTitle.value = todo.title;
       todoDesc.value = todo.description;
       todoCategory.value = todo.category;
+      todoDueDate.value = new Date(todo.dueDate).toISOString().slice(0,16);
       addTaskGroup.style.display = "flex";
       todoTitle.focus();
     });
-
-    const deleteBtn = item.querySelector(".delete-btn");
-    deleteBtn.addEventListener("click", (e) => {
+    item.querySelector(".delete-btn").addEventListener("click", (e) => {
       e.stopPropagation();
-      todos = todos.filter((t) => t.id !== todo.id);
+      todos = todos.filter(t => t.id !== todo.id);
       saveTodos();
       renderTodos();
-      updateNotifications();
     });
-
     todoList.appendChild(item);
   }
 
-  /* --- Render danh sách Todos với phân trang và phân chia theo trạng thái --- */
-  function renderTodos() {
-    let filtered = todos.filter((todo) => {
-      if (currentFilter === "all") return true;
-      return todo.category === currentFilter;
-    });
-
-    allCount.textContent = `(${todos.length})`;
-    todayCount.textContent = `(${todos.filter((t) => t.category === "today").length})`;
-    tomorrowCount.textContent = `(${todos.filter((t) => t.category === "tomorrow").length})`;
-    weekCount.textContent = `(${todos.filter((t) => t.category === "week").length})`;
-    monthCount.textContent = `(${todos.filter((t) => t.category === "month").length})`;
-
-    if (currentFilter === "all" || currentFilter === "today" || currentFilter === "tomorrow") {
-      const pending = filtered.filter(todo => !todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const completedTodos = filtered.filter(todo => todo.completed).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      filtered = [...pending, ...completedTodos];
-    }
-
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    if (currentPage > totalPages) currentPage = 1;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const pageItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-    todoList.innerHTML = "";
-    if (pageItems.length === 0) {
-      todoList.innerHTML = '<div class="empty-message">' + chrome.i18n.getMessage("noTasks") + '</div>';
-      paginationContainer.innerHTML = "";
-      return;
-    }
-
-    if (currentFilter === "all" || currentFilter === "today" || currentFilter === "tomorrow") {
-      let renderedSection = { pending: false, completed: false };
-      pageItems.forEach(todo => {
-        if (!todo.completed && !renderedSection.pending) {
-          const header = document.createElement("div");
-          header.className = "section-header";
-          header.textContent = chrome.i18n.getMessage("uncompleted");
-          todoList.appendChild(header);
-          renderedSection.pending = true;
-        }
-        if (todo.completed && !renderedSection.completed) {
-          const header = document.createElement("div");
-          header.className = "section-header";
-          header.textContent = chrome.i18n.getMessage("completed");
-          todoList.appendChild(header);
-          renderedSection.completed = true;
-        }
-        renderTodoItem(todo);
-      });
-    } else {
-      pageItems.forEach(renderTodoItem);
-    }
-
-    renderPagination(totalPages);
-  }
-
-  /* --- Render phân trang --- */
   function renderPagination(totalPages) {
     if (totalPages <= 1) {
       paginationContainer.innerHTML = "";
       return;
     }
     paginationContainer.innerHTML = "";
-
     const prevBtn = document.createElement("button");
-    prevBtn.classList.add("pagination-btn");
     prevBtn.textContent = "←";
     prevBtn.disabled = currentPage === 1;
     prevBtn.addEventListener("click", () => {
@@ -389,23 +538,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     paginationContainer.appendChild(prevBtn);
-
     for (let i = 1; i <= totalPages; i++) {
       const pageBtn = document.createElement("button");
-      pageBtn.classList.add("pagination-btn");
-      if (i === currentPage) {
-        pageBtn.classList.add("active");
-      }
       pageBtn.textContent = i;
+      if (i === currentPage) pageBtn.classList.add("active");
       pageBtn.addEventListener("click", () => {
         currentPage = i;
         renderTodos();
       });
       paginationContainer.appendChild(pageBtn);
     }
-
     const nextBtn = document.createElement("button");
-    nextBtn.classList.add("pagination-btn");
     nextBtn.textContent = "→";
     nextBtn.disabled = currentPage === totalPages;
     nextBtn.addEventListener("click", () => {
@@ -417,203 +560,22 @@ document.addEventListener('DOMContentLoaded', () => {
     paginationContainer.appendChild(nextBtn);
   }
 
-  /* --- Định dạng thời gian hiển thị --- */
-  function formatTime(timeStr) {
-    if (!timeStr) return "";
-    const date = new Date(timeStr);
-    return date.toLocaleString();
-  }
-
-  /* --- Hàm cắt chuỗi mô tả --- */
-  function truncate(text, maxLength) {
-    return text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  }
-
-  /* --- Detail View --- */
   function showDetail(todo) {
     detailContent.innerHTML = `
       <h2>${todo.title}</h2>
-      <p>${todo.description ? todo.description : chrome.i18n.getMessage("noDescription")}</p>
-      <p><strong>${chrome.i18n.getMessage("categoryLabel")}:</strong> ${chrome.i18n.getMessage(todo.category)}</p>
-      <p><strong>${chrome.i18n.getMessage("createdLabel")}:</strong> ${formatTime(todo.createdAt)}</p>
-      ${todo.lastEditedAt ? `<p><strong>${chrome.i18n.getMessage("lastEditedLabel")}:</strong> ${formatTime(todo.lastEditedAt)}</p>` : ''}
+      <p>${todo.description}</p>
+      <p><strong>Category:</strong> ${todo.category}</p>
+      <p><strong>Due:</strong> ${new Date(todo.dueDate).toLocaleString()}</p>
+      <p><strong>Created:</strong> ${new Date(todo.createdAt).toLocaleString()}</p>
+      ${todo.lastEditedAt ? `<p><strong>Last Edited:</strong> ${new Date(todo.lastEditedAt).toLocaleString()}</p>` : ''}
     `;
-    document.querySelector('.main').style.display = 'none';
-    detailView.style.display = 'block';
+    document.querySelector('.main').style.display = "none";
+    detailView.style.display = "flex";
   }
-  backBtn.addEventListener('click', () => {
-    detailView.style.display = 'none';
-    document.querySelector('.main').style.display = 'block';
+  backBtn.addEventListener("click", () => {
+    detailView.style.display = "none";
+    document.querySelector('.main').style.display = "block";
   });
 
-  /* --- Export to Word --- */
-  function exportToWord() {
-    const todayStr = new Date().toISOString().split('T')[0];
-    let content = '<html><head><meta charset="utf-8"><title>' + chrome.i18n.getMessage("todoListExportTitle") + '</title></head><body>';
-    content += '<h1>' + chrome.i18n.getMessage("todoListHeader") + '</h1>';
-    todos.forEach(todo => {
-      content += `<h2>${todo.title}</h2>`;
-      content += `<p>${todo.description ? todo.description : ""}</p>`;
-      content += `<p><em>${chrome.i18n.getMessage("categoryLabel")}: ${chrome.i18n.getMessage(todo.category)} | ${chrome.i18n.getMessage("createdLabel")}: ${formatTime(todo.createdAt)}</em></p>`;
-      content += `<p><strong>${chrome.i18n.getMessage("statusLabel")}: ${todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending")}</strong></p>`;
-      if (todo.lastEditedAt) {
-        content += `<p><em>${chrome.i18n.getMessage("lastEditedLabel")}: ${formatTime(todo.lastEditedAt)}</em></p>`;
-      }
-      content += `<hr>`;
-    });
-    content += '</body></html>';
-    const blob = new Blob([content], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `todolist-${todayStr}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-  exportBtn.addEventListener('click', exportToWord);
-
-  /* --- Export to Excel (CSV) --- */
-  function exportToExcel() {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += `${chrome.i18n.getMessage("titleLabel")},${chrome.i18n.getMessage("descriptionLabel")},${chrome.i18n.getMessage("categoryLabel")},${chrome.i18n.getMessage("createdLabel")},${chrome.i18n.getMessage("statusLabel")},${chrome.i18n.getMessage("lastEditedLabel")}\n`;
-    todos.forEach(todo => {
-      const row = [
-        `"${todo.title.replace(/"/g, '""')}"`,
-        `"${(todo.description || "").replace(/"/g, '""')}"`,
-        chrome.i18n.getMessage(todo.category),
-        todo.createdAt,
-        todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending"),
-        todo.lastEditedAt || ""
-      ].join(",");
-      csvContent += row + "\n";
-    });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    const todayStr = new Date().toISOString().split('T')[0];
-    link.setAttribute("download", `todolist-${todayStr}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-  exportExcelBtn.addEventListener('click', exportToExcel);
-
-
-   // --- Search Popup Functionality ---
-   const searchIcon = document.getElementById('search-icon');
-   const searchPopup = document.getElementById('search-popup');
-   const searchClose = document.getElementById('search-close');
-   const searchInput = document.getElementById('search-input');
-   const searchResults = document.getElementById('search-results');
-   const searchTabs = document.querySelectorAll('.search-tab');
- 
-   let currentSearchFilter = 'all';
- 
-   // Mở search popup khi nhấn vào icon search
-   searchIcon.addEventListener('click', () => {
-     searchPopup.style.display = 'flex';
-     searchInput.focus();
-   });
- 
-   // Đóng search popup khi click nút đóng
-   searchClose.addEventListener('click', () => {
-     searchPopup.style.display = 'none';
-     searchInput.value = '';
-     searchResults.innerHTML = '';
-     resetSearchTabs(); // Khôi phục nội dung ban đầu cho các tab
-   });
- 
-   // Đóng search popup khi click bên ngoài khối nội dung
-   searchPopup.addEventListener('click', function(event) {
-     if (event.target === searchPopup) {
-       searchPopup.style.display = 'none';
-       searchInput.value = '';
-       searchResults.innerHTML = '';
-       resetSearchTabs();
-     }
-   });
- 
-   // Xử lý chuyển tab trong search popup
-   searchTabs.forEach(tab => {
-     tab.addEventListener('click', () => {
-       searchTabs.forEach(t => t.classList.remove('active'));
-       tab.classList.add('active');
-       currentSearchFilter = tab.getAttribute('data-filter');
-       performSearch();
-     });
-   });
- 
-   // Hàm khôi phục nội dung ban đầu cho các tab (với chỉ số = 0)
-   function resetSearchTabs() {
-     document.querySelector('.search-tab[data-filter="all"]').innerHTML = chrome.i18n.getMessage("all") + "(0)";
-     document.querySelector('.search-tab[data-filter="today"]').innerHTML = chrome.i18n.getMessage("today") + "(0)";
-     document.querySelector('.search-tab[data-filter="week"]').innerHTML = chrome.i18n.getMessage("thisWeek") + "(0)";
-     document.querySelector('.search-tab[data-filter="month"]').innerHTML = chrome.i18n.getMessage("thisMonth") + "(0)";
-   }
- 
-   // Hàm thực hiện tìm kiếm và cập nhật badge cho các tab
-   function performSearch() {
-     const query = searchInput.value.trim().toLowerCase();
-     if (!query) {
-       searchResults.innerHTML = '';
-       resetSearchTabs();
-       return;
-     }
-     // Lọc tất cả task theo query (title hoặc description)
-     const allResults = todos.filter(todo => {
-       return todo.title.toLowerCase().includes(query) ||
-              (todo.description && todo.description.toLowerCase().includes(query));
-     });
-     // Lọc theo từng category
-     const resultsAll = allResults;
-     const resultsToday = allResults.filter(todo => todo.category === 'today');
-     const resultsWeek = allResults.filter(todo => todo.category === 'week');
-     const resultsMonth = allResults.filter(todo => todo.category === 'month');
- 
-     // Cập nhật badge cho các tab
-     document.querySelector('.search-tab[data-filter="all"]').innerHTML = chrome.i18n.getMessage("all") + `(${resultsAll.length})`;
-     document.querySelector('.search-tab[data-filter="today"]').innerHTML = chrome.i18n.getMessage("today") + `(${resultsToday.length})`;
-     document.querySelector('.search-tab[data-filter="week"]').innerHTML = chrome.i18n.getMessage("thisWeek") + `(${resultsWeek.length})`;
-     document.querySelector('.search-tab[data-filter="month"]').innerHTML = chrome.i18n.getMessage("thisMonth") + `(${resultsMonth.length})`;
- 
-     // Chọn kết quả hiển thị theo tab được chọn
-     let filtered = [];
-     if (currentSearchFilter === 'all') {
-       filtered = resultsAll;
-     } else if (currentSearchFilter === 'today') {
-       filtered = resultsToday;
-     } else if (currentSearchFilter === 'week') {
-       filtered = resultsWeek;
-     } else if (currentSearchFilter === 'month') {
-       filtered = resultsMonth;
-     }
- 
-     // Hiển thị kết quả
-     let resultsCountHTML = `<div class="search-results-count">${filtered.length} ${chrome.i18n.getMessage("resultsFound")}</div>`;
-     searchResults.innerHTML = '';
-     if (filtered.length === 0) {
-       searchResults.innerHTML = `<div class="search-no-result">${chrome.i18n.getMessage("noTasksFound")}</div>`;
-     } else {
-       searchResults.innerHTML = resultsCountHTML;
-       filtered.forEach(todo => {
-         const item = document.createElement('div');
-         item.classList.add('search-result-item');
-         item.textContent = todo.title;
-         // Khi click vào kết quả, mở chi tiết task và ẩn popup
-         item.addEventListener('click', () => {
-           showDetail(todo);
-           searchPopup.style.display = 'none';
-           searchInput.value = '';
-           searchResults.innerHTML = '';
-           resetSearchTabs();
-         });
-         searchResults.appendChild(item);
-       });
-     }
-   }
- 
-   // Lắng nghe sự kiện nhập liệu để thực hiện tìm kiếm
-   searchInput.addEventListener('input', performSearch);
   loadTodos();
 });
