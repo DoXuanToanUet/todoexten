@@ -577,5 +577,204 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('.main').style.display = "block";
   });
 
+
+  // Các biến tham chiếu cho Settings Popup
+const settingsIcon = document.getElementById('settings-icon');
+const settingsPopup = document.getElementById('settings-popup');
+const settingsClose = document.getElementById('settings-close');
+const userNameInput = document.getElementById('userNameInput');
+const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+// Khi nhấn vào icon settings thì hiện popup
+settingsIcon.addEventListener('click', () => {
+  settingsPopup.style.display = 'block';
+});
+
+// Đóng popup khi nhấn nút close
+settingsClose.addEventListener('click', () => {
+  settingsPopup.style.display = 'none';
+});
+
+// Khi lưu cấu hình
+saveSettingsBtn.addEventListener('click', () => {
+  const userName = userNameInput.value.trim();
+
+  // Lưu tên người dùng vào storage và cập nhật tiêu đề header
+  chrome.storage.sync.set({ userName }, () => {
+    const headerTitle = document.querySelector('.title');
+    headerTitle.textContent = userName ? `Hi, ${userName}` : chrome.i18n.getMessage("newTask");
+  });
+
+  // Lấy trạng thái checkbox của các filter
+  const filtersConfig = {
+    all: document.getElementById('filter-all').checked,
+    today: document.getElementById('filter-today').checked,
+    tomorrow: document.getElementById('filter-tomorrow').checked,
+    thisWeek: document.getElementById('filter-this-week').checked,
+    planned: document.getElementById('filter-planned').checked,
+    completed: document.getElementById('filter-completed').checked
+  };
+  chrome.storage.sync.set({ filtersConfig }, () => {
+    // Cập nhật hiển thị các tab filter theo cấu hình
+    document.querySelectorAll('.tab').forEach(tab => {
+      const category = tab.dataset.category;
+      // Đối chiếu key trong filtersConfig với giá trị của data-category
+      // (Chú ý: nếu key không khớp, bạn có thể cần ánh xạ lại tên cho phù hợp)
+      if (filtersConfig[category] !== undefined ? filtersConfig[category] : true) {
+        tab.style.display = 'inline-block';
+      } else {
+        tab.style.display = 'none';
+      }
+    });
+  });
+  // Đóng popup sau khi lưu
+  settingsPopup.style.display = 'none';
+});
+
+// Khi trang được tải, khởi tạo các giá trị cài đặt đã lưu
+chrome.storage.sync.get(['userName', 'filtersConfig'], (data) => {
+  if (data.userName) {
+    userNameInput.value = data.userName;
+    const headerTitle = document.querySelector('.title');
+    headerTitle.textContent = `Hi, ${data.userName}`;
+  }
+  if (data.filtersConfig) {
+    document.getElementById('filter-all').checked = data.filtersConfig.all;
+    document.getElementById('filter-today').checked = data.filtersConfig.today;
+    document.getElementById('filter-tomorrow').checked = data.filtersConfig.tomorrow;
+    document.getElementById('filter-this-week').checked = data.filtersConfig.thisWeek;
+    document.getElementById('filter-planned').checked = data.filtersConfig.planned;
+    document.getElementById('filter-completed').checked = data.filtersConfig.completed;
+    // Cập nhật hiển thị các tab filter
+    document.querySelectorAll('.tab').forEach(tab => {
+      const category = tab.dataset.category;
+      if (data.filtersConfig[category] !== undefined ? data.filtersConfig[category] : true) {
+        tab.style.display = 'inline-block';
+      } else {
+        tab.style.display = 'none';
+      }
+    });
+  }
+});
+// Xử lý chuyển tab trong popup
+document.querySelectorAll('.settings-tabs .tab').forEach(tab => {
+  tab.addEventListener('click', function () {
+    // Xóa active của tất cả tab
+    document.querySelectorAll('.settings-tabs .tab').forEach(t => t.classList.remove('active'));
+    // Đặt active cho tab được click
+    this.classList.add('active');
+
+    // Lấy tên tab từ data attribute
+    var tabName = this.dataset.tab;
+
+    // Ẩn tất cả nội dung tab
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    // Hiển thị nội dung tương ứng
+    document.getElementById(tabName + '-content').style.display = 'block';
+  });
+});
+// Sự kiện chọn tất cả các filter
+document.getElementById('select-all-filters').addEventListener('click', function() {
+  document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = true;
+  });
+});
+
+// Sự kiện bỏ chọn tất cả các filter
+document.getElementById('deselect-all-filters').addEventListener('click', function() {
+  document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = false;
+  });
+});
+// Xử lý sự kiện cho nút "Show Demo"
+document.getElementById('show-demo-btn').addEventListener('click', function () {
+  const demoTasks = [];
+  for (let i = 1; i <= 30; i++) {
+    // Sinh một ngày ngẫu nhiên trong khoảng từ hôm nay đến 30 ngày sau
+    const randomDays = Math.floor(Math.random() * 30);
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + randomDays);
+
+    demoTasks.push({
+      id: Date.now() + i,  // ID demo (không quá quan trọng, chỉ để demo)
+      title: "Demo Task " + i,
+      description: "This is a demo description for task " + i,
+      category: "demo",
+      dueDate: dueDate.toISOString(),
+      completed: false,
+      createdAt: new Date().toISOString(),
+      lastEditedAt: null
+    });
+  }
+  // Lưu 50 task demo vào chrome.storage.sync với key "todos"
+  chrome.storage.sync.set({ todos: demoTasks }, function () {
+    document.getElementById('demo-message').textContent = "50 demo tasks have been added!";
+    // Nếu có hàm renderTodos() để cập nhật UI task, bạn có thể gọi ở đây:
+    // renderTodos();
+  });
+});
+
+// Xử lý sự kiện cho nút "Reset Demo"
+document.getElementById('reset-demo-btn').addEventListener('click', function () {
+  // Thiết lập "todos" về trạng thái ban đầu (ví dụ: mảng rỗng)
+  chrome.storage.sync.set({ todos: [] }, function () {
+    document.getElementById('demo-message').textContent = "Demo tasks have been reset!";
+    // Nếu có hàm renderTodos() để cập nhật UI task, bạn có thể gọi ở đây:
+    // renderTodos();
+  });
+});
+ /* --- Export to Excel (CSV) --- */
+ function exportToExcel() {
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += `${chrome.i18n.getMessage("titleLabel")},${chrome.i18n.getMessage("descriptionLabel")},${chrome.i18n.getMessage("categoryLabel")},${chrome.i18n.getMessage("createdLabel")},${chrome.i18n.getMessage("statusLabel")},${chrome.i18n.getMessage("lastEditedLabel")}\n`;
+  todos.forEach(todo => {
+    const row = [
+      `"${todo.title.replace(/"/g, '""')}"`,
+      `"${(todo.description || "").replace(/"/g, '""')}"`,
+      chrome.i18n.getMessage(todo.category),
+      todo.createdAt,
+      todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending"),
+      todo.lastEditedAt || ""
+    ].join(",");
+    csvContent += row + "\n";
+  });
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  const todayStr = new Date().toISOString().split('T')[0];
+  link.setAttribute("download", `todolist-${todayStr}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+exportExcelBtn.addEventListener('click', exportToExcel);
+  // /* --- Export to Word --- */
+  // function exportToWord() {
+  //   const todayStr = new Date().toISOString().split('T')[0];
+  //   let content = '<html><head><meta charset="utf-8"><title>' + chrome.i18n.getMessage("todoListExportTitle") + '</title></head><body>';
+  //   content += '<h1>' + chrome.i18n.getMessage("todoListHeader") + '</h1>';
+  //   todos.forEach(todo => {
+  //     content += `<h2>${todo.title}</h2>`;
+  //     content += `<p>${todo.description ? todo.description : ""}</p>`;
+  //     content += `<p><em>${chrome.i18n.getMessage("categoryLabel")}: ${chrome.i18n.getMessage(todo.category)} | ${chrome.i18n.getMessage("createdLabel")}: ${formatTime(todo.createdAt)}</em></p>`;
+  //     content += `<p><strong>${chrome.i18n.getMessage("statusLabel")}: ${todo.completed ? chrome.i18n.getMessage("completed") : chrome.i18n.getMessage("pending")}</strong></p>`;
+  //     if (todo.lastEditedAt) {
+  //       content += `<p><em>${chrome.i18n.getMessage("lastEditedLabel")}: ${formatTime(todo.lastEditedAt)}</em></p>`;
+  //     }
+  //     content += `<hr>`;
+  //   });
+  //   content += '</body></html>';
+  //   const blob = new Blob([content], { type: 'application/msword' });
+  //   const url = URL.createObjectURL(blob);
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = `todolist-${todayStr}.doc`;
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // }
+  // exportBtn.addEventListener('click', exportToWord);
   loadTodos();
 });

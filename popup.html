@@ -939,6 +939,207 @@
   z-index: 1150;
   display: none;
 }
+/* Popup Settings Overlay */
+.settings-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Popup Content */
+.settings-popup-content {
+  background: #fff;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Nút đóng Popup */
+.settings-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Container Tab */
+.settings-tab-container {
+  display: flex;
+  min-height: 300px;
+}
+
+/* Danh sách tab bên trái */
+.settings-tabs {
+  background: #f7f7f7;
+  width: 150px;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mỗi tab */
+.settings-tabs .tab {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.settings-tabs .tab:hover {
+  background: #eaeaea;
+}
+
+.settings-tabs .tab.active {
+  background: #fff;
+  font-weight: bold;
+  border-left: 4px solid var(--primary-color, #3a66f7);
+}
+
+/* Icon và Label của tab */
+.tab-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.tab-label {
+  font-size: 16px;
+}
+
+/* Nội dung hiển thị bên phải */
+.settings-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Kiểu checkbox (đặt cạnh label) */
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 5px;
+}
+
+/* Nút Lưu */
+.save-btn {
+  width: calc(100% - 40px);
+  margin: 20px;
+  padding: 10px;
+  background-color: var(--primary-color, #3a66f7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  opacity: 0.9;
+}
+/* Phần điều khiển chọn/bỏ chọn tất cả */
+.filter-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-btn {
+  padding: 5px 10px;
+  font-size: 14px;
+  background-color: var(--primary-color, #3a66f7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.filter-btn:hover {
+  opacity: 0.8;
+}
+
+/* Danh sách các filter */
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+}
+
+.filter-option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
+  accent-color: var(--primary-color, #3a66f7);
+}
+
+.filter-option label {
+  font-size: 16px;
+}
+/* --- Style cho phần Demo Tab --- */
+.demo-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.demo-btn {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: var(--primary-color, #3a66f7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.demo-btn:hover {
+  opacity: 0.9;
+}
+
+#demo-message {
+  margin-top: 10px;
+  font-style: italic;
+  color: #333;
+}
+
   </style>
 </head>
 <body>
@@ -958,8 +1159,89 @@
         <span id="notif-badge">0</span>
       </span>
       <span id="user-icon">👤</span>
+      <!-- Icon Settings mới -->
+  <span id="settings-icon">⚙️</span>
     </div>
   </header>
+<!-- Modern Settings Popup with Vertical Tabs -->
+<div id="settings-popup" class="settings-popup" style="display: none;">
+  <div class="settings-popup-content">
+    <button id="settings-close" class="settings-close">✖</button>
+    <div class="settings-tab-container">
+      <!-- Danh sách tab bên trái -->
+      <div class="settings-tabs">
+        <div class="tab active" data-tab="profile">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">Hồ sơ</span>
+        </div>
+        <div class="tab" data-tab="filter">
+          <span class="tab-icon">⚙️</span>
+          <span class="tab-label">Bộ lọc</span>
+        </div>
+        <div class="tab" data-tab="demo">
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Demo</span>
+        </div>
+      </div>
+      <!-- Nội dung hiển thị bên phải -->
+      <div class="settings-content">
+        <div class="tab-content" id="profile-content">
+          <h2>Hồ sơ</h2>
+          <div class="form-group">
+            <label for="userNameInput">Tên của bạn:</label>
+            <input type="text" id="userNameInput" placeholder="Nhập tên của bạn">
+          </div>
+        </div>
+        <!-- Nội dung tab cấu hình hiển thị filter -->
+      <div class="tab-content" id="filter-content" style="display: none;">
+        <h2>Cấu hình hiển thị filter</h2>
+        <!-- Nút điều khiển chọn/bỏ chọn tất cả -->
+        <div class="filter-controls">
+          <button id="select-all-filters" class="filter-btn">Chọn tất cả</button>
+          <button id="deselect-all-filters" class="filter-btn">Bỏ chọn tất cả</button>
+        </div>
+        <!-- Danh sách filter -->
+        <div class="filter-options">
+          <div class="filter-option">
+            <input type="checkbox" id="filter-all" checked>
+            <label for="filter-all">All</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-today" checked>
+            <label for="filter-today">Today</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-tomorrow" checked>
+            <label for="filter-tomorrow">Tomorrow</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-this-week" checked>
+            <label for="filter-this-week">This Week</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-planned" checked>
+            <label for="filter-planned">Planned</label>
+          </div>
+          <div class="filter-option">
+            <input type="checkbox" id="filter-completed" checked>
+            <label for="filter-completed">Completed</label>
+          </div>
+        </div>
+      </div>
+      <!-- Tab Demo -->
+<div class="tab-content" id="demo-content" style="display: none;">
+  <h2>Demo Tasks</h2>
+  <div class="demo-buttons">
+    <button id="show-demo-btn" class="demo-btn">Show Demo</button>
+    <button id="reset-demo-btn" class="demo-btn">Reset Demo</button>
+  </div>
+  <div id="demo-message"></div>
+</div>
+      </div>
+    </div>
+    <button id="save-settings-btn" class="save-btn">Lưu</button>
+  </div>
+</div>
 
   <!-- Search Popup Overlay -->
   <div id="search-popup" class="search-popup" style="display: none;">
